@@ -1,5 +1,4 @@
-/*! peerjs.js build:0.3.9, development. Copyright(c) 2013 Michelle Bu <michelle@michellebu.com> */
-(function(exports){
+/*! peerjs build: 0.3.9 - Copyright(c) 2013 Michelle Bu <michelle@michellebu.com> */
 var binaryFeatures = {};
 binaryFeatures.useBlobBuilder = (function(){
   try {
@@ -17,6 +16,21 @@ binaryFeatures.useArrayBufferView = !binaryFeatures.useBlobBuilder && (function(
     return true;
   }
 })();
+binaryFeatures.supportsBinaryWebsockets = (function(){
+  try {
+    var wstest = new WebSocket('ws://null');
+    wstest.onerror = function(){};
+    if (typeof(wstest.binaryType) !== "undefined") {
+      return true;
+    } else {
+      return false;
+    }
+    wstest.close();
+    wstest = null;
+  } catch (e) {
+    return false;
+  }
+})();
 
 exports.binaryFeatures = binaryFeatures;
 exports.BlobBuilder = window.WebKitBlobBuilder || window.MozBlobBuilder || window.MSBlobBuilder || window.BlobBuilder;
@@ -30,13 +44,13 @@ BufferBuilder.prototype.append = function(data) {
   if(typeof data === 'number') {
     this._pieces.push(data);
   } else {
-    this.flush();
+    this._flush();
     this._parts.push(data);
   }
 };
 
-BufferBuilder.prototype.flush = function() {
-  if (this._pieces.length > 0) {
+BufferBuilder.prototype._flush = function() {
+  if (this._pieces.length > 0) {    
     var buf = new Uint8Array(this._pieces);
     if(!binaryFeatures.useArrayBufferView) {
       buf = buf.buffer;
@@ -47,7 +61,7 @@ BufferBuilder.prototype.flush = function() {
 };
 
 BufferBuilder.prototype.getBuffer = function() {
-  this.flush();
+  this._flush();
   if(binaryFeatures.useBlobBuilder) {
     var builder = new BlobBuilder();
     for(var i = 0, ii = this._parts.length; i < ii; i++) {
@@ -58,6 +72,7 @@ BufferBuilder.prototype.getBuffer = function() {
     return new Blob(this._parts);
   }
 };
+
 exports.BinaryPack = {
   unpack: function(data){
     var unpacker = new Unpacker(data);
@@ -65,8 +80,7 @@ exports.BinaryPack = {
   },
   pack: function(data){
     var packer = new Packer();
-    packer.pack(data);
-    var buffer = packer.getBuffer();
+    var buffer = packer.pack(data);
     return buffer;
   }
 };
@@ -233,9 +247,9 @@ Unpacker.prototype.unpack_raw = function(size){
   }
   var buf = this.dataBuffer.slice(this.index, this.index + size);
   this.index += size;
-
+  
     //buf = util.bufferToString(buf);
-
+  
   return buf;
 }
 
@@ -308,13 +322,9 @@ Unpacker.prototype.read = function(length){
     throw new Error('BinaryPackFailure: read index out of range');
   }
 }
-
-function Packer(){
+  
+function Packer (){
   this.bufferBuilder = new BufferBuilder();
-}
-
-Packer.prototype.getBuffer = function(){
-  return this.bufferBuilder.getBuffer();
 }
 
 Packer.prototype.pack = function(value){
@@ -352,7 +362,7 @@ Packer.prototype.pack = function(value){
         }
       } else if ('BYTES_PER_ELEMENT' in value){
         if(binaryFeatures.useArrayBufferView) {
-          this.pack_bin(new Uint8Array(value.buffer));
+          this.pack_bin(value);
         } else {
           this.pack_bin(value.buffer);
         }
@@ -369,7 +379,7 @@ Packer.prototype.pack = function(value){
   } else {
     throw new Error('Type "' + type + '" not yet supported');
   }
-  this.bufferBuilder.flush();
+  return this.bufferBuilder.getBuffer();
 }
 
 
@@ -391,8 +401,7 @@ Packer.prototype.pack_bin = function(blob){
 }
 
 Packer.prototype.pack_string = function(str){
-  var length = utf8Length(str);
-
+  var length = str.length;
   if (length <= 0x0f){
     this.pack_uint8(0xb0 + length);
   } else if (length <= 0xffff){
@@ -557,24 +566,6 @@ Packer.prototype.pack_int64 = function(num){
   this.bufferBuilder.append((low  & 0x000000ff));
 }
 
-function _utf8Replace(m){
-  var code = m.charCodeAt(0);
-
-  if(code <= 0x7ff) return '00';
-  if(code <= 0xffff) return '000';
-  if(code <= 0x1fffff) return '0000';
-  if(code <= 0x3ffffff) return '00000';
-  return '000000';
-}
-
-function utf8Length(str){
-  if (str.length > 600) {
-    // Blob method faster for large strings
-    return (new Blob([str])).size;
-  } else {
-    return str.replace(/[^\u0000-\u007F]/g, _utf8Replace).length;
-  }
-}
 /**
  * Light EventEmitter. Ported from Node.js/events.js
  * Eric Zhang
@@ -733,6 +724,7 @@ EventEmitter.prototype.emit = function(type) {
     return false;
   }
 };
+
 
 
 
@@ -1052,9 +1044,11 @@ Reliable.higherBandwidthSDP = function(sdp) {
 Reliable.prototype.onmessage = function(msg) {};
 
 exports.Reliable = Reliable;
+
 exports.RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
 exports.RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
 exports.RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
+
 var defaultConfig = {'iceServers': [{ 'url': 'stun:stun.l.google.com:19302' }]};
 var dataCount = 1;
 
@@ -1366,6 +1360,7 @@ var util = {
 };
 
 exports.util = util;
+
 /**
  * A peer who can initiate connections with other peers.
  */
@@ -1856,6 +1851,7 @@ Peer.prototype.listAllPeers = function(cb) {
 }
 
 exports.Peer = Peer;
+
 /**
  * Wraps a DataChannel between two Peers.
  */
@@ -2116,6 +2112,7 @@ DataConnection.prototype.handleMessage = function(message) {
       break;
   }
 }
+
 /**
  * Wraps the streaming interface between two Peers.
  */
@@ -2205,6 +2202,7 @@ MediaConnection.prototype.close = function() {
   Negotiator.cleanup(this);
   this.emit('close')
 };
+
 /**
  * Manages all negotiations between Peers.
  */
@@ -2499,6 +2497,7 @@ Negotiator.handleCandidate = function(connection, ice) {
   }));
   util.log('Added ICE candidate for:', connection.peer);
 }
+
 /**
  * An abstraction on top of WebSockets and XHR streaming to provide fastest
  * possible connection for peers.
@@ -2707,5 +2706,3 @@ Socket.prototype.close = function() {
     this.disconnected = true;
   }
 }
-
-})(this);
