@@ -8,5 +8,4 @@ describe('adapter', function() {
     expect(RTCSessionDescription).to.be.a('function');
   });
 
-
 });
