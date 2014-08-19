@@ -4,6 +4,14 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
+    docco: {
+      lib: {
+        src: ['lib/**/*.coffee'],
+        options: {
+          output: 'docs/'
+        }
+      }
+    },
     concat: {
       options: {
         banner: banner
@@ -43,9 +51,12 @@ module.exports = function(grunt) {
         dest: "test/results.html"
       },
     },
+    coffeelint: {
+      app: ['<%= docco.lib.src %>']
+    },
     watch: {
-      files: ['<%= jshint.files %>'],
-      tasks: ['jshint', 'qunit']
+      files: ['<%= docco.lib.src %>'],
+      tasks: ['coffeelint', 'docco']
     }
   });
 

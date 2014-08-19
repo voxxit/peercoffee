@@ -4,20 +4,33 @@
   "description": "PeerJS client",
   "repository": {
     "type": "git",
-    "url": "git://github.com/peers/peerjs.git"
+    "url": "git://github.com/voxxit/peerjs.git"
   },
   "author": "Michelle Bu, Eric Zhang",
   "license": "MIT",
   "devDependencies": {
+    "bower": "^1.3.9",
+    "chai": "^1.9.1",
+    "coffee-script": "^1.7.1",
+    "coffeelint": "^1.5.6",
+    "docco": "^0.6.3",
     "grunt": "^0.4.5",
+    "grunt-coffeelint": "0.0.13",
     "grunt-contrib-concat": "^0.5.0",
     "grunt-contrib-uglify": "^0.5.1",
     "grunt-contrib-watch": "^0.6.1",
+    "grunt-docco": "^0.3.3",
     "grunt-mocha": "^0.4.11",
     "load-grunt-tasks": "^0.6.0",
-    "bower": "^0.3.9"
+    "mocha": "^1.21.4",
+    "mocha-phantomjs": "^3.5.0",
+    "phantomjs": "^1.9.7-15"
   },
   "scripts": {
+    "test": "mocha-phantomjs ./test/test.html",
     "postinstall": "node_modules/.bin/bower install"
+  },
+  "dependencies": {
+    "lodash": "^2.4.1"
   }
 }
