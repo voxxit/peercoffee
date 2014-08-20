@@ -40,6 +40,7 @@ module.exports = (grunt) ->
         customTests: [
           "lib/modernizr/*.js"
         ]
+
     concat:
       options:
         banner: banner
@@ -58,6 +59,13 @@ module.exports = (grunt) ->
           'lib/socket.js'
         ]
         dest: 'dist/peer.js'
+
+    coffee:
+      dist:
+        options:
+          bare: true
+        files:
+          'dist/peer.js': ['lib/**/*.coffee']
 
     uglify:
       options:

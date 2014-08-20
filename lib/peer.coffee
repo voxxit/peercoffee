@@ -1,5 +1,3 @@
-"use strict"
-
 ((root, factory) ->
   if typeof define is "function" and define.amd
     define [], -> root.Peer = factory()
@@ -9,7 +7,9 @@
     root.Peer = factory()
 )(@, () ->
 
-  # A peer who can initiate connections with other peers.
+  ###
+  A peer who can initiate connections with other peers.
+  ###
   Peer = (id, options) ->
     return new Peer(id, options)  unless this instanceof Peer
     EventEmitter.call this
@@ -21,6 +21,8 @@
 
     # Ensure id is a string
     else id = id.toString()  if id
+
+    #
 
     # Configurize options
     options = util.extend(
@@ -48,6 +50,8 @@
     util.setLogFunction options.logFunction  if options.logFunction
     util.setLogLevel options.debug
 
+    #
+
     # Sanity checks
     # Ensure WebRTC supported
     if not util.supports.audioVideo and not util.supports.data
@@ -69,6 +73,8 @@
       @_delayedAbort "ssl-unavailable", "The cloud server currently does not support HTTPS. Please run your own PeerServer to use HTTPS."
       return
 
+    #
+
     # States.
     @destroyed = false # Connections have been killed
     @disconnected = false # Connection to PeerServer killed but P2P connections still active
@@ -88,6 +94,7 @@
       @_retrieveId()
     return
 
+  #
   util.inherits Peer, EventEmitter
 
   # Initialize the 'socket' (which is actually a mix of XHR streaming and
@@ -120,7 +127,9 @@
     return
 
 
-  # Get a unique ID from the server via XHR.
+  ###
+  Get a unique ID from the server via XHR.
+  ###
   Peer::_retrieveId = (cb) ->
     self = this
     http = new XMLHttpRequest()
@@ -134,9 +143,7 @@
     http.onerror = (e) ->
       util.error "Error retrieving ID", e
       pathError = ""
-      pathError = " If you passed in a `path` to your self-hosted PeerServer, " +
-        "you'll also need to pass in that same path when creating a new" +
-        " Peer."  if self.options.path is "/" and self.options.host isnt util.CLOUD_HOST
+      pathError = " If you passed in a `path` to your self-hosted PeerServer, " + "you'll also need to pass in that same path when creating a new" + " Peer."  if self.options.path is "/" and self.options.host isnt util.CLOUD_HOST
       self._abort "server-error", "Could not get an ID from the server." + pathError
       return
 
@@ -149,13 +156,21 @@
       return
 
     http.send null
+    return
 
-  # Initialize a connection with the server.
+
+  ###
+  Initialize a connection with the server.
+  ###
   Peer::_initialize = (id) ->
     @id = id
     @socket.start @id, @options.token
+    return
 
-  # Handles messages from the server.
+
+  ###
+  Handles messages from the server.
+  ###
   Peer::_handleMessage = (message) ->
     type = message.type
     payload = message.payload
@@ -170,6 +185,8 @@
         @_abort "unavailable-id", "ID `" + @id + "` is taken"
       when "INVALID-KEY" # The given API key cannot be found.
         @_abort "invalid-key", "API KEY \"" + @options.key + "\" is invalid"
+
+      #
       when "LEAVE" # Another peer has closed its connection to this peer.
         util.log "Received leave message from", peer
         @_cleanupPeer peer
@@ -233,13 +250,19 @@
         else
           util.warn "You received an unrecognized message:", message
 
-  # Stores messages without a set up connection, to be claimed later.
+
+  ###
+  Stores messages without a set up connection, to be claimed later.
+  ###
   Peer::_storeMessage = (connectionId, message) ->
     @_lostMessages[connectionId] = []  unless @_lostMessages[connectionId]
     @_lostMessages[connectionId].push message
     return
 
-  # Retrieve messages from lost message store
+
+  ###
+  Retrieve messages from lost message store
+  ###
   Peer::_getMessages = (connectionId) ->
     messages = @_lostMessages[connectionId]
     if messages
@@ -249,25 +272,28 @@
     else
       []
 
-  # Returns a DataConnection to the specified peer. See documentation for a complete list of options.
+
+  ###
+  Returns a DataConnection to the specified peer. See documentation for a
+  complete list of options.
+  ###
   Peer::connect = (peer, options) ->
     if @disconnected
-      util.warn "You cannot connect to a new Peer because you called " +
-        ".disconnect() on this Peer and ended your connection with the" +
-        " server. You can create a new Peer to reconnect, or call reconnect" +
-        " on this peer if you believe its ID to still be available."
+      util.warn "You cannot connect to a new Peer because you called " + ".disconnect() on this Peer and ended your connection with the" + " server. You can create a new Peer to reconnect, or call reconnect" + " on this peer if you believe its ID to still be available."
       @emitError "disconnected", "Cannot connect to new Peer after disconnecting from server."
       return
     connection = new DataConnection(peer, this, options)
     @_addConnection peer, connection
     connection
 
-  # Returns a MediaConnection to the specified peer. See documentation for a complete list of options.
+
+  ###
+  Returns a MediaConnection to the specified peer. See documentation for a
+  complete list of options.
+  ###
   Peer::call = (peer, stream, options) ->
     if @disconnected
-      util.warn "You cannot connect to a new Peer because you called " +
-        ".disconnect() on this Peer and ended your connection with the" +
-        " server. You can create a new Peer to reconnect."
+      util.warn "You cannot connect to a new Peer because you called " + ".disconnect() on this Peer and ended your connection with the" + " server. You can create a new Peer to reconnect."
       @emitError "disconnected", "Cannot connect to new Peer after disconnecting from server."
       return
     unless stream
@@ -279,13 +305,19 @@
     @_addConnection peer, call
     call
 
-  # Add a data/media connection to this peer.
+
+  ###
+  Add a data/media connection to this peer.
+  ###
   Peer::_addConnection = (peer, connection) ->
     @connections[peer] = []  unless @connections[peer]
     @connections[peer].push connection
     return
 
-  # Retrieve a data/media connection for this peer.
+
+  ###
+  Retrieve a data/media connection for this peer.
+  ###
   Peer::getConnection = (peer, id) ->
     connections = @connections[peer]
     return null  unless connections
@@ -305,8 +337,12 @@
 
     return
 
-  # Destroys the Peer and emits an error message. The Peer is not destroyed if it's in a disconnected state, in
-  # which case it retains its disconnected state and its existing connections.
+
+  ###
+  Destroys the Peer and emits an error message.
+  The Peer is not destroyed if it's in a disconnected state, in which case
+  it retains its disconnected state and its existing connections.
+  ###
   Peer::_abort = (type, message) ->
     util.error "Aborting!"
     unless @_lastServerId
@@ -316,7 +352,10 @@
     @emitError type, message
     return
 
-  # Emits a typed error message.
+
+  ###
+  Emits a typed error message.
+  ###
   Peer::emitError = (type, err) ->
     util.error "Error:", err
     err = new Error(err)  if typeof err is "string"
@@ -324,8 +363,13 @@
     @emit "error", err
     return
 
-  # Destroys the Peer: closes all active connections as well as the connection to the server.
-  # Warning: The peer can no longer create or accept connections after being destroyed.
+
+  ###
+  Destroys the Peer: closes all active connections as well as the connection
+  to the server.
+  Warning: The peer can no longer create or accept connections after being
+  destroyed.
+  ###
   Peer::destroy = ->
     unless @destroyed
       @_cleanup()
@@ -333,7 +377,10 @@
       @destroyed = true
     return
 
-  # Disconnects every connection on this peer.
+
+  ###
+  Disconnects every connection on this peer.
+  ###
   Peer::_cleanup = ->
     if @connections
       peers = Object.keys(@connections)
@@ -346,7 +393,10 @@
     @emit "close"
     return
 
-  # Closes all connections to this peer.
+
+  ###
+  Closes all connections to this peer.
+  ###
   Peer::_cleanupPeer = (peer) ->
     connections = @connections[peer]
     j = 0
@@ -357,9 +407,13 @@
       j += 1
     return
 
-  # Disconnects the Peer's connection to the PeerServer. Does not close any active connections.
-  # Warning: The peer can no longer create or accept connections after being disconnected. It also
-  # cannot reconnect to the server.
+
+  ###
+  Disconnects the Peer's connection to the PeerServer. Does not close any
+  active connections.
+  Warning: The peer can no longer create or accept connections after being
+  disconnected. It also cannot reconnect to the server.
+  ###
   Peer::disconnect = ->
     self = this
     util.setZeroTimeout ->
@@ -374,7 +428,10 @@
 
     return
 
-  # Attempts to reconnect with the same ID.
+
+  ###
+  Attempts to reconnect with the same ID.
+  ###
   Peer::reconnect = ->
     if @disconnected and not @destroyed
       util.log "Attempting reconnection to server with ID " + @_lastServerId
@@ -391,9 +448,13 @@
       throw new Error("Peer " + @id + " cannot reconnect because it is not disconnected from the server!")
     return
 
-  # Get a list of available peer IDs. If you're running your own server, you'll want to set allow_discovery: true
-  # in the PeerServer options. If you're using the cloud server, email team@peerjs.com to get the
-  # functionality enabled for your key.
+
+  ###
+  Get a list of available peer IDs. If you're running your own server, you'll
+  want to set allow_discovery: true in the PeerServer options. If you're using
+  the cloud server, email team@peerjs.com to get the functionality enabled for
+  your key.
+  ###
   Peer::listAllPeers = (cb) ->
     cb = cb or ->
 
@@ -416,12 +477,10 @@
       if http.status is 401
         helpfulError = ""
         if self.options.host isnt util.CLOUD_HOST
-          helpfulError = "It looks like you're using the cloud server. You can email " +
-            "team@peerjs.com to enable peer listing for your API key."
+          helpfulError = "It looks like you're using the cloud server. You can email " + "team@peerjs.com to enable peer listing for your API key."
         else
-          helpfulError = "You need to enable `allow_discovery` on your self-hosted" +
-            " PeerServer to use this feature."
-        throw new Error("It doesn't look like you have permission to list peers IDs. " + helpfulError)cb []
+          helpfulError = "You need to enable `allow_discovery` on your self-hosted" + " PeerServer to use this feature."
+        throw new Error("It doesn't look like you have permission to list peers IDs. " + helpfulError)
       else if http.status isnt 200
         cb []
       else
