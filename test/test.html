@@ -9,7 +9,6 @@
     <script src="../node_modules/chai/chai.js"></script>
     <script>
       mocha.ui('bdd');
-      mocha.reporter('html');
 
       expect = chai.expect;
 
@@ -18,16 +17,17 @@
 
     <script src="../deps/js-binarypack/lib/bufferbuilder.js"></script>
     <script src="../deps/js-binarypack/lib/binarypack.js"></script>
-    <script src="../deps/EventEmitter/EventEmitter.js"></script>
-    <script src="../lib/shims/ice_candidate.js"></script>
-    <script src="../lib/shims/peer_connection.js"></script>
-    <script src="../lib/shims/session_description.js"></script>
-    <script src="../lib/util.js"></script>
-    <script src="../lib/dataconnection.js"></script>
-    <script src="../lib/peer.js"></script>
-    <script src="../lib/socket.js"></script>
-    <script src="../lib/negotiator.js"></script>
     <script src="../deps/reliable/lib/reliable.js"></script>
+
+    <script src="lib/shims/iceCandidate.js"></script>
+    <script src="lib/shims/peerConnection.js"></script>
+    <script src="lib/shims/sessionDescription.js"></script>
+    <script src="lib/util.js"></script>
+    <script src="lib/dataConnection.js"></script>
+    <script src="lib/mediaConnection.js"></script>
+    <script src="lib/peer.js"></script>
+    <script src="lib/socket.js"></script>
+    <script src="lib/negotiator.js"></script>
 
     <script src="lib/test/util.js"></script>
     <script src="lib/test/adapter.js"></script>
