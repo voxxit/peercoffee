@@ -1,79 +1,55 @@
-# PeerJS: Simple peer-to-peer with WebRTC #
+## PeerCoffee: WebRTC + Pusher + Coffee [![Build Status](https://travis-ci.org/voxxit/peercoffee.svg?branch=master)](https://travis-ci.org/voxxit/peercoffee) [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 
-PeerJS provides a complete, configurable, and easy-to-use peer-to-peer API built on top of WebRTC, supporting both data channels and media streams.
+Based on the wonderful [PeerJS](http://peerjs.com) library, **PeerCoffee** is a fully-tested library baked with CoffeeScript which offers a developer-friendly API for WebRTC.
 
-### [http://peerjs.com](http://peerjs.com)
+### Getting Started
 
-## Setup
+Use [bower](http://bower.io) to install the JavaScript dependency to your site:
 
+    $ bower install peercoffee
 
-**Include the library**
+Then, load the script onto your site, and add a peer for the local user:
 
-```html
-<script src="http://cdn.peerjs.com/0.3/peer.js"></script>
+```coffee
+localPeer = new Peer()
 ```
 
-**Create a Peer**  
-Get a [free API key](http://peerjs.com/peerserver). Your id only needs to be unique to the namespace of your API key.
-```javascript
-var peer = new Peer('pick-an-id', {key: 'myapikey'}); 
-// You can pick your own id or omit the id if you want to get a random one from the server.
+At this point, the possibilities are endless! Perhaps you instruct the users to give the URL they are on to another user.
+
+```coffee
+localPeer.withMedia (localStream) ->
+
+  call = localPeer.call('remote-peer')
+
+  call.on 'stream', (remoteStream) ->
+    # Do something with the stream
+    # e.g. add it to a <video> element
 ```
 
-## Data connections
-**Connect**
-```javascript
-var conn = peer.connect('another-peers-id');
-conn.on('open', function(){
-  conn.send('hi!');
-});
+Peers can also listen for calls:
+
+```coffee
+localPeer.on 'call', (call) ->
+
+  # Get the local stream first
+  localPeer.withMedia (localStream) ->
+
+    # Answer the call; sending back a local stream
+    call.answer(localStream)
+
+    # Then wait for the remote stream to start
+    call.on 'stream', (remoteStream) ->
+      # Do something with the stream
+      # e.g. add it to a <video> element
 ```
-**Receive**
-```javascript
-peer.on('connection', function(conn) {
-  conn.on('data', function(data){
-    // Will print 'hi!'
-    console.log(data);
-  });
-});
-```
 
-## Media calls
-**Call**
-```javascript
-navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-navigator.getUserMedia({video: true, audio: true}, function(stream) {
-  var call = peer.call('another-peers-id', stream);
-  call.on('stream', function(remoteStream) {
-    // Show stream in some <video> element.
-  });
-}, function(err) {
-  console.log('Failed to get local stream' ,err);
-});
+### Documentation
 
-```
-**Answer**
-```javascript
-navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-peer.on('call', function(call) {
-  navigator.getUserMedia({video: true, audio: true}, function(stream) {
-    call.answer(stream); // Answer the call with an A/V stream.
-    call.on('stream', function(remoteStream) {
-      // Show stream in some <video> element.
-    });
-  }, function(err) {
-    console.log('Failed to get local stream' ,err);
-  });
-});
-```
-## Links
+Find annotated documentation for the PeerCoffee API here:
 
-### [Documentation / API Reference](http://peerjs.com/docs)
-
-### [WebRTC Browser compatibility status](http://peerjs.com/status)
-
-### [PeerServer](https://github.com/peers/peerjs-server)
-
-### [Discuss PeerJS on our Google Group](https://groups.google.com/forum/?fromgroups#!forum/peerjs)
-
-### [Changelog](https://github.com/peers/peerjs/blob/master/changelog.md)
+- [`PeerCoffee.DataConnection`](http://voxxit.com/peercoffee/peer.html)
+- [`PeerCoffee.MediaConnection`](http://voxxit.com/peercoffee/peer.html)
+- [`PeerCoffee.Negotiator`](http://voxxit.com/peercoffee/peer.html)
+- [`PeerCoffee.Peer`](http://voxxit.com/peercoffee/peer.html)
+- [`PeerCoffee.Socket`](http://voxxit.com/peercoffee/socket.html)
+- [`PeerCoffee.util`](http://voxxit.com/peercoffee/util.html)
