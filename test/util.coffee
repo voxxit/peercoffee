@@ -1,4 +1,3 @@
-expect = require("chai").expect
 util   = require("../lib/util.coffee").util
 
 describe "util", ->

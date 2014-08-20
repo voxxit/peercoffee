@@ -1,10 +1,9 @@
 {
-  "name": "peerjs",
+  "name": "peercoffee",
   "version": "0.3.10",
-  "homepage": "https://github.com/voxxit/peerjs",
+  "homepage": "https://github.com/voxxit/peercoffee",
   "authors": [
-    "Michelle Bu",
-    "Eric Zhang"
+    "Joshua Delsman"
   ],
   "main": "dist/peer.js",
   "license": "MIT",
@@ -16,7 +15,6 @@
     "tests"
   ],
   "dependencies": {
-    "EventEmitter": "peers/EventEmitter",
     "js-binarypack": "peers/js-binarypack",
     "reliable": "michellebu/reliable"
   }

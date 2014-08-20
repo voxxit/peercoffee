@@ -1,11 +1,11 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="../node_modules/mocha/mocha.css" />
+    <link rel="stylesheet" href="mocha.css" />
   </head>
   <body>
     <div id="mocha"></div>
-    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="mocha.js"></script>
     <script src="../node_modules/chai/chai.js"></script>
     <script>
       mocha.ui('bdd');
@@ -29,8 +29,8 @@
     <script src="../lib/negotiator.js"></script>
     <script src="../deps/reliable/lib/reliable.js"></script>
 
-    <script src="util.js"></script>
-    <script src="adapter.js"></script>
+    <script src="lib/test/util.js"></script>
+    <script src="lib/test/adapter.js"></script>
 
     <script>
       if (window.mochaPhantomJS) {

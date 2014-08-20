@@ -12,67 +12,62 @@ module.exports = (grunt) ->
         options:
           output: 'docs/'
 
-    modernizr:
+    browserify:
       dist:
-        devFile: "remote"
-        outputFile: "deps/modernizr.js"
-        extra:
-          shiv: false
-          printshiv: false
-          load: false
-          mq: false
-          cssclasses: false
-        extensibility:
-          addtest: false
-          prefixed: true
-          teststyles: false
-          testprops: false
-          testallprops: false
-          hasevents: false
-          prefixes: true
-          domprefixes: true
-        uglify: false
-        tests: ['blob_constructor', 'websockets_binary', 'getusermedia']
-        parseFiles: true
         files:
-          src: ["lib/**/*.coffee"]
-        matchCommunityTests: true
-        customTests: [
-          "lib/modernizr/*.js"
-        ]
+          'dist/peercoffee.js': ['lib/**/*.coffee']
+        options:
+          transform: ['coffeeify']
+          alias: [
+            './lib/util.coffee:util'
+            './lib/negotiator.coffee:negotiator'
+            './deps/reliable/dist/reliable:reliable'
+            './lib/shims/iceCandidate.coffee:ice-candidate'
+            './lib/shims/peerConnection.coffee:peer-connection'
+            './lib/shims/sessionDescription.coffee:session-description'
+            './lib/socket.coffee:socket'
+            './lib/peer.coffee:peer'
+            './lib/dataConnection.coffee:data-connection'
+            './lib/mediaConnection.coffee:media-connection'
+            './deps/js-binarypack/dist/binarypack.js:binarypack'
+          ]
 
     concat:
       options:
         banner: banner
-      dist:
+      vendor:
         src: [
           'deps/js-binarypack/lib/bufferbuilder.js',
           'deps/js-binarypack/lib/binarypack.js',
           'deps/EventEmitter/EventEmitter.js',
-          'deps/reliable/lib/reliable.js',
-          'lib/adapter.js',
-          'lib/util.js',
-          'lib/peer.js',
-          'lib/dataconnection.js',
-          'lib/mediaconnection.js',
-          'lib/negotiator.js',
-          'lib/socket.js'
+          'deps/reliable/lib/reliable.js'
         ]
-        dest: 'dist/peer.js'
+        dest: 'dist/peercoffee.vendor.js'
+      dist:
+        src: ['dist/peercoffee.vendor.js', 'dist/peercoffee.src.js']
+        dest: 'dist/peercoffee.js'
 
     coffee:
+      options:
+        bare: true
       dist:
-        options:
-          bare: true
         files:
-          'dist/peer.js': ['lib/**/*.coffee']
+          'dist/peercoffee.src.js': ['lib/**/*.coffee']
+      test:
+        options:
+          join: false
+        expand: true
+        cwd: 'lib/'
+        src: ['**/*.coffee']
+        dest: 'test/lib'
+        ext: '.js'
 
     uglify:
       options:
         banner: banner
       dist:
         files:
-          'dist/peer.min.js': ['<%= concat.dist.dest %>']
+          'dist/peercoffee.min.js': ['dist/peercoffee.js']
 
     mocha:
       test:
@@ -96,5 +91,8 @@ module.exports = (grunt) ->
 
   require('load-grunt-tasks')(grunt)
 
+  grunt.registerTask('build', ['concat:vendor', 'coffee:dist', 'concat:dist', 'uglify'])
+  grunt.registerTask('build:test', ['coffee:test'])
+
   grunt.registerTask('test', ['mocha'])
-  grunt.registerTask('default', ['concat', 'uglify'])
+  grunt.registerTask('default', ['concat:vendor', 'coffee', 'concat:dist', 'uglify'])

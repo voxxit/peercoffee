@@ -1,17 +1,17 @@
 ## PeerCoffee: WebRTC + Pusher + Coffee [![Build Status](https://travis-ci.org/voxxit/peercoffee.svg?branch=master)](https://travis-ci.org/voxxit/peercoffee) [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 
-Based on the wonderful [PeerJS](http://peerjs.com) library, **PeerCoffee** is a fully-tested library baked with CoffeeScript which offers a developer-friendly API for WebRTC.
+Based on the wonderful [PeerJS](http://peerjs.com) library, **PeerCoffee** is a fully-tested library baked with CoffeeScript which offers a developer-friendly API for WebRTC, using [Pusher](http://pusher.com) as the signaling server.
 
 ### Getting Started
 
-Use [bower](http://bower.io) to install the JavaScript dependency to your site:
+Use [bower](http://bower.io) to install the JavaScript library:
 
     $ bower install peercoffee
 
 Then, load the script onto your site, and add a peer for the local user:
 
 ```coffee
-localPeer = new Peer()
+localPeer = new PeerCoffee.Peer()
 ```
 
 At this point, the possibilities are endless! Perhaps you instruct the users to give the URL they are on to another user.
