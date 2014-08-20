@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>negotiator.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="dataconnection.html">
+                dataconnection.coffee
+              </a>
+            
+              
+              <a class="source" href="mediaconnection.html">
+                mediaconnection.coffee
+              </a>
+            
+              
+              <a class="source" href="negotiator.html">
+                negotiator.coffee
+              </a>
+            
+              
+              <a class="source" href="peer.html">
+                peer.coffee
+              </a>
+            
+              
+              <a class="source" href="ice_candidate.html">
+                ice_candidate.coffee
+              </a>
+            
+              
+              <a class="source" href="peer_connection.html">
+                peer_connection.coffee
+              </a>
+            
+              
+              <a class="source" href="session_description.html">
+                session_description.coffee
+              </a>
+            
+              
+              <a class="source" href="socket.html">
+                socket.coffee
+              </a>
+            
+              
+              <a class="source" href="util.html">
+                util.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>negotiator.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-params">((root, factory) -&gt;
+  <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> define <span class="hljs-keyword">is</span> <span class="hljs-string">"function"</span> <span class="hljs-keyword">and</span> define.amd
+    define [], -&gt; root.Negotiator = factory()
+  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> exports <span class="hljs-keyword">is</span> <span class="hljs-string">"object"</span>
+    <span class="hljs-built_in">module</span>.exports = factory()
+  <span class="hljs-keyword">else</span>
+    root.Negotiator = factory()
+)(@, () -&gt;
+
+</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <h1 id="negotiator">Negotiator</h1>
+<hr>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Manages all negotiations between Peers.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Negotiator =
+    <span class="hljs-attribute">pcs</span>:
+      <span class="hljs-attribute">data</span>: {}
+      <span class="hljs-attribute">media</span>: {}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>type =&gt; {peerId: {pc_id: pc}}.
+providers: {}, // provider’s id =&gt; providers (there may be multiple providers/client.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-attribute">queue</span>: [] <span class="hljs-comment"># connections that are delayed due to a PC being in use.</span>
+
+  Negotiator._idPrefix = <span class="hljs-string">"pc_"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Returns a PeerConnection object set up correctly (for data, media).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Negotiator.<span class="hljs-function"><span class="hljs-title">startConnection</span> = <span class="hljs-params">(connection, options)</span> -&gt;</span>
+    pc = Negotiator._getPeerConnection(connection, options)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Add the stream.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    pc.addStream options._stream  <span class="hljs-keyword">if</span> connection.type <span class="hljs-keyword">is</span> <span class="hljs-string">"media"</span> <span class="hljs-keyword">and</span> options._stream</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Set the connection’s PC.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    connection.pc = connection.peerConnection = pc</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>What do we need to do now?</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> options.originator
+      <span class="hljs-keyword">if</span> connection.type <span class="hljs-keyword">is</span> <span class="hljs-string">"data"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Create the datachannel.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        config = {}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Dropping reliable:false support, since it seems to be crashing
+Chrome.
+if (util.supports.sctp &amp;&amp; !options.reliable) {
+       // If we have canonical reliable support…
+       config = {maxRetransmits: 0};
+     }</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Fallback to ensure older browsers don’t crash.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        config = <span class="hljs-attribute">reliable</span>: options.reliable  <span class="hljs-keyword">unless</span> util.supports.sctp
+        dc = pc.createDataChannel(connection.label, config)
+        connection.initialize dc
+      Negotiator._makeOffer connection  <span class="hljs-keyword">unless</span> util.supports.onnegotiationneeded
+    <span class="hljs-keyword">else</span>
+      Negotiator.handleSDP <span class="hljs-string">"OFFER"</span>, connection, options.sdp
+
+  Negotiator.<span class="hljs-function"><span class="hljs-title">_getPeerConnection</span> = <span class="hljs-params">(connection, options)</span> -&gt;</span>
+    <span class="hljs-keyword">unless</span> Negotiator.pcs[connection.type]
+      util.error <span class="hljs-string">"<span class="hljs-subst">#{connection.type}</span> is not a valid connection type. Maybe you overrode the `type` property somewhere."</span>
+
+    <span class="hljs-keyword">unless</span> Negotiator.pcs[connection.type][connection.peer]
+      Negotiator.pcs[connection.type][connection.peer] = {}
+
+    peerConnections = Negotiator.pcs[connection.type][connection.peer]
+    pc = <span class="hljs-literal">undefined</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Not multiplexing while FF and Chrome have not-great support for it.
+if (options.multiplex) {
+   ids = Object.keys(peerConnections);
+   for (var i = 0, ii = ids.length; i &lt; ii; i += 1) {
+     pc = peerConnections[ids[i]];
+     if (pc.signalingState === ‘stable’) {
+       break; // We can go ahead and use this PC.
+     }
+   }
+ } else
+Simplest case: PC id already provided for us.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    pc = Negotiator.pcs[connection.type][connection.peer][options.pc]  <span class="hljs-keyword">if</span> options.pc
+    pc = Negotiator._startPeerConnection(connection)  <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> pc <span class="hljs-keyword">or</span> pc.signalingState <span class="hljs-keyword">isnt</span> <span class="hljs-string">"stable"</span>
+    pc</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Negotiator._addProvider = function(provider) {
+ if ((!provider.id &amp;&amp; !provider.disconnected) || !provider.socket.open) {
+   // Wait for provider to obtain an ID.
+   provider.on(‘open’, function(id) {
+     Negotiator._addProvider(provider);
+   });
+ } else {
+   Negotiator.providers[provider.id] = provider;
+ }
+}</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Start a PC</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Negotiator.<span class="hljs-function"><span class="hljs-title">_startPeerConnection</span> = <span class="hljs-params">(connection)</span> -&gt;</span>
+    util.log <span class="hljs-string">"Creating RTCPeerConnection."</span>
+    id = Negotiator._idPrefix + util.randomToken()
+    optional = {}
+    <span class="hljs-keyword">if</span> connection.type <span class="hljs-keyword">is</span> <span class="hljs-string">"data"</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> util.supports.sctp
+      optional = <span class="hljs-attribute">optional</span>: [<span class="hljs-attribute">RtpDataChannels</span>: <span class="hljs-literal">true</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Interop req for chrome.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">else</span> optional = <span class="hljs-attribute">optional</span>: [<span class="hljs-attribute">DtlsSrtpKeyAgreement</span>: <span class="hljs-literal">true</span>]  <span class="hljs-keyword">if</span> connection.type <span class="hljs-keyword">is</span> <span class="hljs-string">"media"</span>
+    pc = <span class="hljs-keyword">new</span> RTCPeerConnection(connection.provider.options.config, optional)
+    Negotiator.pcs[connection.type][connection.peer][id] = pc
+    Negotiator._setupListeners connection, pc, id
+    pc</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Set up various WebRTC listeners.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Negotiator.<span class="hljs-function"><span class="hljs-title">_setupListeners</span> = <span class="hljs-params">(connection, pc, pc_id)</span> -&gt;</span>
+    peerId = connection.peer
+    connectionId = connection.id
+    provider = connection.provider</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>ICE CANDIDATES.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    util.log <span class="hljs-string">"Listening for ICE candidates."</span>
+    pc.<span class="hljs-function"><span class="hljs-title">onicecandidate</span> = <span class="hljs-params">(evt)</span> -&gt;</span>
+      <span class="hljs-keyword">if</span> evt.candidate
+        util.log <span class="hljs-string">"Received ICE candidates for:"</span>, connection.peer
+        provider.socket.send
+          <span class="hljs-attribute">type</span>: <span class="hljs-string">"CANDIDATE"</span>
+          <span class="hljs-attribute">payload</span>:
+            <span class="hljs-attribute">candidate</span>: evt.candidate
+            <span class="hljs-attribute">type</span>: connection.type
+            <span class="hljs-attribute">connectionId</span>: connection.id
+
+          <span class="hljs-attribute">dst</span>: peerId
+
+      <span class="hljs-keyword">return</span>
+
+    pc.<span class="hljs-function"><span class="hljs-title">oniceconnectionstatechange</span> = -&gt;</span>
+      <span class="hljs-keyword">switch</span> pc.iceConnectionState
+        <span class="hljs-keyword">when</span> <span class="hljs-string">"disconnected"</span>, <span class="hljs-string">"failed"</span>
+          util.log <span class="hljs-string">"iceConnectionState is disconnected, closing connections to "</span> + peerId
+          connection.close()
+        <span class="hljs-keyword">when</span> <span class="hljs-string">"completed"</span>
+          pc.onicecandidate = util.noop</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Fallback for older Chrome impls.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    pc.onicechange = pc.oniceconnectionstatechange</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>ONNEGOTIATIONNEEDED (Chrome)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    util.log <span class="hljs-string">"Listening for `negotiationneeded`"</span>
+    pc.<span class="hljs-function"><span class="hljs-title">onnegotiationneeded</span> = -&gt;</span>
+      util.log <span class="hljs-string">"`negotiationneeded` triggered"</span>
+      <span class="hljs-keyword">if</span> pc.signalingState <span class="hljs-keyword">is</span> <span class="hljs-string">"stable"</span>
+        Negotiator._makeOffer connection
+      <span class="hljs-keyword">else</span>
+        util.log <span class="hljs-string">"onnegotiationneeded triggered when not stable. Is another connection being established?"</span>
+      <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>DATACONNECTION.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    util.log <span class="hljs-string">"Listening for data channel"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Fired between offer and answer, so options should already be saved
+in the options hash.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    pc.<span class="hljs-function"><span class="hljs-title">ondatachannel</span> = <span class="hljs-params">(evt)</span> -&gt;</span>
+      util.log <span class="hljs-string">"Received data channel"</span>
+      dc = evt.channel
+      connection = provider.getConnection(peerId, connectionId)
+      connection.initialize dc
+      <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>MEDIACONNECTION.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    util.log <span class="hljs-string">"Listening for remote stream"</span>
+    pc.<span class="hljs-function"><span class="hljs-title">onaddstream</span> = <span class="hljs-params">(evt)</span> -&gt;</span>
+      util.log <span class="hljs-string">"Received remote stream"</span>
+      stream = evt.stream
+      provider.getConnection(peerId, connectionId).addStream stream
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-keyword">return</span>
+
+  Negotiator.<span class="hljs-function"><span class="hljs-title">cleanup</span> = <span class="hljs-params">(connection)</span> -&gt;</span>
+    util.log <span class="hljs-string">"Cleaning up PeerConnection to "</span> + connection.peer
+    pc = connection.pc
+    <span class="hljs-keyword">if</span> !!pc <span class="hljs-keyword">and</span> (pc.readyState <span class="hljs-keyword">isnt</span> <span class="hljs-string">"closed"</span> <span class="hljs-keyword">or</span> pc.signalingState <span class="hljs-keyword">isnt</span> <span class="hljs-string">"closed"</span>)
+      pc.close()
+      connection.pc = <span class="hljs-literal">null</span>
+    <span class="hljs-keyword">return</span>
+
+  Negotiator.<span class="hljs-function"><span class="hljs-title">_makeOffer</span> = <span class="hljs-params">(connection)</span> -&gt;</span>
+    pc = connection.pc
+    pc.createOffer <span class="hljs-function"><span class="hljs-params">((offer) -&gt;
+      util.log <span class="hljs-string">"Created offer."</span>
+      <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> util.supports.sctp <span class="hljs-keyword">and</span> connection.type <span class="hljs-keyword">is</span> <span class="hljs-string">"data"</span> <span class="hljs-keyword">and</span> connection.reliable
+        offer.sdp = Reliable.higherBandwidthSDP(offer.sdp)
+
+      pc.setLocalDescription offer, (-&gt;
+        util.log <span class="hljs-string">"Set localDescription: offer"</span>, <span class="hljs-string">"for:"</span>, connection.peer
+        connection.provider.socket.send
+          type: <span class="hljs-string">"OFFER"</span>
+          payload:
+            sdp: offer
+            type: connection.type
+            label: connection.label
+            connectionId: connection.id
+            reliable: connection.reliable
+            serialization: connection.serialization
+            metadata: connection.metadata
+            browser: util.browser
+
+          dst: connection.peer
+
+        <span class="hljs-keyword">return</span>
+      ), (err) -&gt;
+        connection.provider.emitError <span class="hljs-string">"webrtc"</span>, err
+        util.log <span class="hljs-string">"Failed to setLocalDescription, "</span>, err
+        <span class="hljs-keyword">return</span>
+
+      <span class="hljs-keyword">return</span>
+    )</span>, <span class="hljs-params">((err) -&gt;
+      connection.provider.emitError <span class="hljs-string">"webrtc"</span>, err
+      util.log <span class="hljs-string">"Failed to createOffer, "</span>, err
+      <span class="hljs-keyword">return</span>
+    )</span>, <span class="hljs-title">connection</span>.<span class="hljs-title">options</span>.<span class="hljs-title">constraints</span>
+
+  <span class="hljs-title">Negotiator</span>.<span class="hljs-title">_makeAnswer</span> = <span class="hljs-params">(connection)</span> -&gt;</span>
+    pc = connection.pc
+    pc.createAnswer <span class="hljs-function"><span class="hljs-params">((answer) -&gt;
+      util.log <span class="hljs-string">"Created answer."</span>
+      <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> util.supports.sctp <span class="hljs-keyword">and</span> connection.type <span class="hljs-keyword">is</span> <span class="hljs-string">"data"</span> <span class="hljs-keyword">and</span> connection.reliable
+        answer.sdp = Reliable.higherBandwidthSDP(answer.sdp)
+
+      pc.setLocalDescription answer, (-&gt;
+        util.log <span class="hljs-string">"Set localDescription: answer"</span>, <span class="hljs-string">"for:"</span>, connection.peer
+        connection.provider.socket.send
+          type: <span class="hljs-string">"ANSWER"</span>
+          payload:
+            sdp: answer
+            type: connection.type
+            connectionId: connection.id
+            browser: util.browser
+
+          dst: connection.peer
+
+        <span class="hljs-keyword">return</span>
+      ), (err) -&gt;
+        connection.provider.emitError <span class="hljs-string">"webrtc"</span>, err
+        util.log <span class="hljs-string">"Failed to setLocalDescription, "</span>, err
+        <span class="hljs-keyword">return</span>
+
+      <span class="hljs-keyword">return</span>
+    )</span>, <span class="hljs-params">(err)</span> -&gt;</span>
+      connection.provider.emitError <span class="hljs-string">"webrtc"</span>, err
+      util.log <span class="hljs-string">"Failed to create answer, "</span>, err</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Handle an SDP</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Negotiator.<span class="hljs-function"><span class="hljs-title">handleSDP</span> = <span class="hljs-params">(type, connection, sdp)</span> -&gt;</span>
+    sdp = <span class="hljs-keyword">new</span> RTCSessionDescription(sdp)
+    pc = connection.pc
+    util.log <span class="hljs-string">"Setting remote description"</span>, sdp
+    pc.setRemoteDescription sdp, (<span class="hljs-function">-&gt;</span>
+      util.log <span class="hljs-string">"Set remoteDescription:"</span>, type, <span class="hljs-string">"for:"</span>, connection.peer
+      Negotiator._makeAnswer connection  <span class="hljs-keyword">if</span> type <span class="hljs-keyword">is</span> <span class="hljs-string">"OFFER"</span>
+    ), <span class="hljs-function"><span class="hljs-params">(err)</span> -&gt;</span>
+      connection.provider.emitError <span class="hljs-string">"webrtc"</span>, err
+      util.log <span class="hljs-string">"Failed to setRemoteDescription, "</span>, err</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>Handle a candidate.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Negotiator.<span class="hljs-function"><span class="hljs-title">handleCandidate</span> = <span class="hljs-params">(connection, ice)</span> -&gt;</span>
+    candidate = ice.candidate
+    sdpMLineIndex = ice.sdpMLineIndex
+    connection.pc.addIceCandidate <span class="hljs-keyword">new</span> RTCIceCandidate(
+      <span class="hljs-attribute">sdpMLineIndex</span>: sdpMLineIndex
+      <span class="hljs-attribute">candidate</span>: candidate
+    )
+    util.log <span class="hljs-string">"Added ICE candidate for:"</span>, connection.peer
+
+  <span class="hljs-keyword">return</span> Negotiator
+
+)</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

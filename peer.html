@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>peer.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="dataconnection.html">
+                dataconnection.coffee
+              </a>
+            
+              
+              <a class="source" href="mediaconnection.html">
+                mediaconnection.coffee
+              </a>
+            
+              
+              <a class="source" href="negotiator.html">
+                negotiator.coffee
+              </a>
+            
+              
+              <a class="source" href="peer.html">
+                peer.coffee
+              </a>
+            
+              
+              <a class="source" href="ice_candidate.html">
+                ice_candidate.coffee
+              </a>
+            
+              
+              <a class="source" href="peer_connection.html">
+                peer_connection.coffee
+              </a>
+            
+              
+              <a class="source" href="session_description.html">
+                session_description.coffee
+              </a>
+            
+              
+              <a class="source" href="socket.html">
+                socket.coffee
+              </a>
+            
+              
+              <a class="source" href="util.html">
+                util.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>peer.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-params">((root, factory) -&gt;
+  <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> define <span class="hljs-keyword">is</span> <span class="hljs-string">"function"</span> <span class="hljs-keyword">and</span> define.amd
+    define [], -&gt; root.Peer = factory()
+  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> exports <span class="hljs-keyword">is</span> <span class="hljs-string">"object"</span>
+    <span class="hljs-built_in">module</span>.exports = factory()
+  <span class="hljs-keyword">else</span>
+    root.Peer = factory()
+)(@, () -&gt;
+
+</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  A peer who can initiate connections <span class="hljs-reserved">with</span> other peers.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-function"><span class="hljs-title">Peer</span> = <span class="hljs-params">(id, options)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Peer(id, options)  <span class="hljs-keyword">unless</span> <span class="hljs-keyword">this</span> <span class="hljs-keyword">instanceof</span> Peer
+    EventEmitter.call <span class="hljs-keyword">this</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Deal with overloading</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> id <span class="hljs-keyword">and</span> id.constructor <span class="hljs-keyword">is</span> Object
+      options = id
+      id = `<span class="javascript"><span class="hljs-literal">undefined</span></span>`</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Ensure id is a string</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">else</span> id = id.toString()  <span class="hljs-keyword">if</span> id</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Configurize options</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    options = util.extend(
+      <span class="hljs-attribute">debug</span>: <span class="hljs-number">0</span> <span class="hljs-comment"># 1: Errors, 2: Warnings, 3: All logs</span>
+      <span class="hljs-attribute">host</span>: util.CLOUD_HOST
+      <span class="hljs-attribute">port</span>: util.CLOUD_PORT
+      <span class="hljs-attribute">key</span>: <span class="hljs-string">"peerjs"</span>
+      <span class="hljs-attribute">path</span>: <span class="hljs-string">"/"</span>
+      <span class="hljs-attribute">token</span>: util.randomToken()
+      <span class="hljs-attribute">config</span>: util.defaultConfig
+    , options)
+    <span class="hljs-property">@options</span> = options</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Detect relative URL host.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    options.host = <span class="hljs-built_in">window</span>.location.hostname  <span class="hljs-keyword">if</span> options.host <span class="hljs-keyword">is</span> <span class="hljs-string">"/"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Set path correctly.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    options.path = <span class="hljs-string">"/"</span> + options.path  <span class="hljs-keyword">if</span> options.path[<span class="hljs-number">0</span>] <span class="hljs-keyword">isnt</span> <span class="hljs-string">"/"</span>
+    options.path += <span class="hljs-string">"/"</span>  <span class="hljs-keyword">if</span> options.path[options.path.length - <span class="hljs-number">1</span>] <span class="hljs-keyword">isnt</span> <span class="hljs-string">"/"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Set whether we use SSL to same as current host</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    options.secure = util.isSecure()  <span class="hljs-keyword">if</span> options.secure <span class="hljs-keyword">is</span> `<span class="javascript"><span class="hljs-literal">undefined</span></span>` <span class="hljs-keyword">and</span> options.host <span class="hljs-keyword">isnt</span> util.CLOUD_HOST</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Set a custom log function if present</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    util.setLogFunction options.logFunction  <span class="hljs-keyword">if</span> options.logFunction
+    util.setLogLevel options.debug</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Sanity checks
+Ensure WebRTC supported</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> util.supports.audioVideo <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> util.supports.data
+      <span class="hljs-property">@_delayedAbort</span> <span class="hljs-string">"browser-incompatible"</span>, <span class="hljs-string">"The current browser does not support WebRTC"</span>
+      <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Ensure alphanumeric id</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">unless</span> util.validateId(id)
+      <span class="hljs-property">@_delayedAbort</span> <span class="hljs-string">"invalid-id"</span>, <span class="hljs-string">"ID \""</span> + id + <span class="hljs-string">"\" is invalid"</span>
+      <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Ensure valid key</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">unless</span> util.validateKey(options.key)
+      <span class="hljs-property">@_delayedAbort</span> <span class="hljs-string">"invalid-key"</span>, <span class="hljs-string">"API KEY \""</span> + options.key + <span class="hljs-string">"\" is invalid"</span>
+      <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Ensure not using unsecure cloud server on SSL page</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> options.secure <span class="hljs-keyword">and</span> options.host <span class="hljs-keyword">is</span> <span class="hljs-string">"0.peerjs.com"</span>
+      <span class="hljs-property">@_delayedAbort</span> <span class="hljs-string">"ssl-unavailable"</span>, <span class="hljs-string">"The cloud server currently does not support HTTPS. Please run your own PeerServer to use HTTPS."</span>
+      <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>States.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@destroyed</span> = <span class="hljs-literal">false</span> <span class="hljs-comment"># Connections have been killed</span>
+    <span class="hljs-property">@disconnected</span> = <span class="hljs-literal">false</span> <span class="hljs-comment"># Connection to PeerServer killed but P2P connections still active</span>
+    <span class="hljs-property">@open</span> = <span class="hljs-literal">false</span> <span class="hljs-comment"># Sockets and such are not yet open.</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>References</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@connections</span> = {} <span class="hljs-comment"># DataConnections for this peer.</span>
+    <span class="hljs-property">@_lostMessages</span> = {} <span class="hljs-comment"># src =&gt; [list of messages]</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Start the server connection</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@_initializeServerConnection</span>()
+    <span class="hljs-keyword">if</span> id
+      <span class="hljs-property">@_initialize</span> id
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-property">@_retrieveId</span>()
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  util.inherits Peer, EventEmitter</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>Initialize the ‘socket’ (which is actually a mix of XHR streaming and
+websockets.)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">_initializeServerConnection</span> = -&gt;</span>
+    self = <span class="hljs-keyword">this</span>
+    <span class="hljs-property">@socket</span> = <span class="hljs-keyword">new</span> Socket(<span class="hljs-property">@options</span>.secure, <span class="hljs-property">@options</span>.host, <span class="hljs-property">@options</span>.port, <span class="hljs-property">@options</span>.path, <span class="hljs-property">@options</span>.key)
+    <span class="hljs-property">@socket</span>.<span class="hljs-literal">on</span> <span class="hljs-string">"message"</span>, <span class="hljs-function"><span class="hljs-params">(data)</span> -&gt;</span>
+      self._handleMessage data
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-property">@socket</span>.<span class="hljs-literal">on</span> <span class="hljs-string">"error"</span>, <span class="hljs-function"><span class="hljs-params">(error)</span> -&gt;</span>
+      self._abort <span class="hljs-string">"socket-error"</span>, error
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-property">@socket</span>.<span class="hljs-literal">on</span> <span class="hljs-string">"disconnected"</span>,<span class="hljs-function"> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>If we haven’t explicitly disconnected, emit error and disconnect.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">unless</span> self.disconnected
+        self.emitError <span class="hljs-string">"network"</span>, <span class="hljs-string">"Lost connection to server."</span>
+        self.disconnect()
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-property">@socket</span>.<span class="hljs-literal">on</span> <span class="hljs-string">"close"</span>,<span class="hljs-function"> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>If we haven’t explicitly disconnected, emit error.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      self._abort <span class="hljs-string">"socket-closed"</span>, <span class="hljs-string">"Underlying socket is already closed."</span>  <span class="hljs-keyword">unless</span> self.disconnected
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Get a unique ID from the server via XHR.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">_retrieveId</span> = <span class="hljs-params">(cb)</span> -&gt;</span>
+    self = <span class="hljs-keyword">this</span>
+    http = <span class="hljs-keyword">new</span> XMLHttpRequest()
+    protocol = (<span class="hljs-keyword">if</span> <span class="hljs-property">@options</span>.secure <span class="hljs-keyword">then</span> <span class="hljs-string">"https://"</span> <span class="hljs-keyword">else</span> <span class="hljs-string">"http://"</span>)
+    url = protocol + <span class="hljs-property">@options</span>.host + <span class="hljs-string">":"</span> + <span class="hljs-property">@options</span>.port + <span class="hljs-property">@options</span>.path + <span class="hljs-property">@options</span>.key + <span class="hljs-string">"/id"</span>
+    queryString = <span class="hljs-string">"?ts="</span> + <span class="hljs-keyword">new</span> Date().getTime() + <span class="hljs-string">""</span> + Math.random()
+    url += queryString</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>If there’s no ID we need to wait for one before trying to init socket.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    http.open <span class="hljs-string">"get"</span>, url, <span class="hljs-literal">true</span>
+    http.<span class="hljs-function"><span class="hljs-title">onerror</span> = <span class="hljs-params">(e)</span> -&gt;</span>
+      util.error <span class="hljs-string">"Error retrieving ID"</span>, e
+      pathError = <span class="hljs-string">""</span>
+      pathError = <span class="hljs-string">" If you passed in a `path` to your self-hosted PeerServer, "</span> + <span class="hljs-string">"you'll also need to pass in that same path when creating a new"</span> + <span class="hljs-string">" Peer."</span>  <span class="hljs-keyword">if</span> self.options.path <span class="hljs-keyword">is</span> <span class="hljs-string">"/"</span> <span class="hljs-keyword">and</span> self.options.host <span class="hljs-keyword">isnt</span> util.CLOUD_HOST
+      self._abort <span class="hljs-string">"server-error"</span>, <span class="hljs-string">"Could not get an ID from the server."</span> + pathError
+      <span class="hljs-keyword">return</span>
+
+    http.<span class="hljs-function"><span class="hljs-title">onreadystatechange</span> = -&gt;</span>
+      <span class="hljs-keyword">return</span>  <span class="hljs-keyword">if</span> http.readyState <span class="hljs-keyword">isnt</span> <span class="hljs-number">4</span>
+      <span class="hljs-keyword">if</span> http.status <span class="hljs-keyword">isnt</span> <span class="hljs-number">200</span>
+        http.onerror()
+        <span class="hljs-keyword">return</span>
+      self._initialize http.responseText
+      <span class="hljs-keyword">return</span>
+
+    http.send <span class="hljs-literal">null</span>
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Initialize a connection <span class="hljs-reserved">with</span> the server.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">_initialize</span> = <span class="hljs-params">(id)</span> -&gt;</span>
+    <span class="hljs-property">@id</span> = id
+    <span class="hljs-property">@socket</span>.start <span class="hljs-property">@id</span>, <span class="hljs-property">@options</span>.token
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Handles messages from the server.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">_handleMessage</span> = <span class="hljs-params">(message)</span> -&gt;</span>
+    type = message.type
+    payload = message.payload
+    peer = message.src
+    <span class="hljs-keyword">switch</span> type
+      <span class="hljs-keyword">when</span> <span class="hljs-string">"OPEN"</span> <span class="hljs-comment"># The connection to the server is open.</span>
+        <span class="hljs-property">@emit</span> <span class="hljs-string">"open"</span>, <span class="hljs-property">@id</span>
+        <span class="hljs-property">@open</span> = <span class="hljs-literal">true</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-string">"ERROR"</span> <span class="hljs-comment"># Server error.</span>
+        <span class="hljs-property">@_abort</span> <span class="hljs-string">"server-error"</span>, payload.msg
+      <span class="hljs-keyword">when</span> <span class="hljs-string">"ID-TAKEN"</span> <span class="hljs-comment"># The selected ID is taken.</span>
+        <span class="hljs-property">@_abort</span> <span class="hljs-string">"unavailable-id"</span>, <span class="hljs-string">"ID `"</span> + <span class="hljs-property">@id</span> + <span class="hljs-string">"` is taken"</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-string">"INVALID-KEY"</span> <span class="hljs-comment"># The given API key cannot be found.</span>
+        <span class="hljs-property">@_abort</span> <span class="hljs-string">"invalid-key"</span>, <span class="hljs-string">"API KEY \""</span> + <span class="hljs-property">@options</span>.key + <span class="hljs-string">"\" is invalid"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">when</span> <span class="hljs-string">"LEAVE"</span> <span class="hljs-comment"># Another peer has closed its connection to this peer.</span>
+        util.log <span class="hljs-string">"Received leave message from"</span>, peer
+        <span class="hljs-property">@_cleanupPeer</span> peer
+      <span class="hljs-keyword">when</span> <span class="hljs-string">"EXPIRE"</span> <span class="hljs-comment"># The offer sent to a peer has expired without response.</span>
+        <span class="hljs-property">@emitError</span> <span class="hljs-string">"peer-unavailable"</span>, <span class="hljs-string">"Could not connect to peer "</span> + peer
+      <span class="hljs-keyword">when</span> <span class="hljs-string">"OFFER"</span> <span class="hljs-comment"># we should consider switching this to CALL/CONNECT, but this is the least breaking option.</span>
+        connectionId = payload.connectionId
+        connection = <span class="hljs-property">@getConnection</span>(peer, connectionId)
+        <span class="hljs-keyword">if</span> connection
+          util.warn <span class="hljs-string">"Offer received for existing Connection ID:"</span>, connectionId</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>connection.handleMessage(message);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">else</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>Create a new connection.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">if</span> payload.type <span class="hljs-keyword">is</span> <span class="hljs-string">"media"</span>
+            connection = <span class="hljs-keyword">new</span> MediaConnection(peer, <span class="hljs-keyword">this</span>,
+              <span class="hljs-attribute">connectionId</span>: connectionId
+              <span class="hljs-attribute">_payload</span>: payload
+              <span class="hljs-attribute">metadata</span>: payload.metadata
+            )
+            <span class="hljs-property">@_addConnection</span> peer, connection
+            <span class="hljs-property">@emit</span> <span class="hljs-string">"call"</span>, connection
+          <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> payload.type <span class="hljs-keyword">is</span> <span class="hljs-string">"data"</span>
+            connection = <span class="hljs-keyword">new</span> DataConnection(peer, <span class="hljs-keyword">this</span>,
+              <span class="hljs-attribute">connectionId</span>: connectionId
+              <span class="hljs-attribute">_payload</span>: payload
+              <span class="hljs-attribute">metadata</span>: payload.metadata
+              <span class="hljs-attribute">label</span>: payload.label
+              <span class="hljs-attribute">serialization</span>: payload.serialization
+              <span class="hljs-attribute">reliable</span>: payload.reliable
+            )
+            <span class="hljs-property">@_addConnection</span> peer, connection
+            <span class="hljs-property">@emit</span> <span class="hljs-string">"connection"</span>, connection
+          <span class="hljs-keyword">else</span>
+            util.warn <span class="hljs-string">"Received malformed connection type:"</span>, payload.type
+            <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>Find messages.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          messages = <span class="hljs-property">@_getMessages</span>(connectionId)
+          i = <span class="hljs-number">0</span>
+          ii = messages.length
+
+          <span class="hljs-keyword">while</span> i &lt; ii
+            connection.handleMessage messages[i]
+            i += <span class="hljs-number">1</span>
+      <span class="hljs-keyword">else</span>
+        <span class="hljs-keyword">unless</span> payload
+          util.warn <span class="hljs-string">"You received a malformed message from "</span> + peer + <span class="hljs-string">" of type "</span> + type
+          <span class="hljs-keyword">return</span>
+        id = payload.connectionId
+        connection = <span class="hljs-property">@getConnection</span>(peer, id)
+        <span class="hljs-keyword">if</span> connection <span class="hljs-keyword">and</span> connection.pc</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p>Pass it on.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          connection.handleMessage message
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> id</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              <p>Store for possible later use</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-property">@_storeMessage</span> id, message
+        <span class="hljs-keyword">else</span>
+          util.warn <span class="hljs-string">"You received an unrecognized message:"</span>, message</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Stores messages without a set up connection, to be claimed later.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">_storeMessage</span> = <span class="hljs-params">(connectionId, message)</span> -&gt;</span>
+    <span class="hljs-property">@_lostMessages</span>[connectionId] = []  <span class="hljs-keyword">unless</span> <span class="hljs-property">@_lostMessages</span>[connectionId]
+    <span class="hljs-property">@_lostMessages</span>[connectionId].push message
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Retrieve messages from lost message store</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">_getMessages</span> = <span class="hljs-params">(connectionId)</span> -&gt;</span>
+    messages = <span class="hljs-property">@_lostMessages</span>[connectionId]
+    <span class="hljs-keyword">if</span> messages
+      <span class="hljs-keyword">delete</span> <span class="hljs-property">@_lostMessages</span>[connectionId]
+
+      messages
+    <span class="hljs-keyword">else</span>
+      []</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Returns a DataConnection to the specified peer. See documentation <span class="hljs-keyword">for</span> a
+  complete list <span class="hljs-keyword">of</span> options.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">connect</span> = <span class="hljs-params">(peer, options)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@disconnected</span>
+      util.warn <span class="hljs-string">"You cannot connect to a new Peer because you called "</span> + <span class="hljs-string">".disconnect() on this Peer and ended your connection with the"</span> + <span class="hljs-string">" server. You can create a new Peer to reconnect, or call reconnect"</span> + <span class="hljs-string">" on this peer if you believe its ID to still be available."</span>
+      <span class="hljs-property">@emitError</span> <span class="hljs-string">"disconnected"</span>, <span class="hljs-string">"Cannot connect to new Peer after disconnecting from server."</span>
+      <span class="hljs-keyword">return</span>
+    connection = <span class="hljs-keyword">new</span> DataConnection(peer, <span class="hljs-keyword">this</span>, options)
+    <span class="hljs-property">@_addConnection</span> peer, connection
+    connection</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Returns a MediaConnection to the specified peer. See documentation <span class="hljs-keyword">for</span> a
+  complete list <span class="hljs-keyword">of</span> options.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">call</span> = <span class="hljs-params">(peer, stream, options)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@disconnected</span>
+      util.warn <span class="hljs-string">"You cannot connect to a new Peer because you called "</span> + <span class="hljs-string">".disconnect() on this Peer and ended your connection with the"</span> + <span class="hljs-string">" server. You can create a new Peer to reconnect."</span>
+      <span class="hljs-property">@emitError</span> <span class="hljs-string">"disconnected"</span>, <span class="hljs-string">"Cannot connect to new Peer after disconnecting from server."</span>
+      <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">unless</span> stream
+      util.error <span class="hljs-string">"To call a peer, you must provide a stream from your browser's `getUserMedia`."</span>
+      <span class="hljs-keyword">return</span>
+    options = options <span class="hljs-keyword">or</span> {}
+    options._stream = stream
+    call = <span class="hljs-keyword">new</span> MediaConnection(peer, <span class="hljs-keyword">this</span>, options)
+    <span class="hljs-property">@_addConnection</span> peer, call
+    call</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-48">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-48">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Add a data/media connection to <span class="hljs-keyword">this</span> peer.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-49">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-49">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">_addConnection</span> = <span class="hljs-params">(peer, connection)</span> -&gt;</span>
+    <span class="hljs-property">@connections</span>[peer] = []  <span class="hljs-keyword">unless</span> <span class="hljs-property">@connections</span>[peer]
+    <span class="hljs-property">@connections</span>[peer].push connection
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-50">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-50">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Retrieve a data/media connection <span class="hljs-keyword">for</span> <span class="hljs-keyword">this</span> peer.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-51">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-51">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">getConnection</span> = <span class="hljs-params">(peer, id)</span> -&gt;</span>
+    connections = <span class="hljs-property">@connections</span>[peer]
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>  <span class="hljs-keyword">unless</span> connections
+    i = <span class="hljs-number">0</span>
+    ii = connections.length
+
+    <span class="hljs-keyword">while</span> i &lt; ii
+      <span class="hljs-keyword">return</span> connections[i]  <span class="hljs-keyword">if</span> connections[i].id <span class="hljs-keyword">is</span> id
+      i++
+    <span class="hljs-literal">null</span>
+
+  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">_delayedAbort</span> = <span class="hljs-params">(type, message)</span> -&gt;</span>
+    self = <span class="hljs-keyword">this</span>
+    util.setZeroTimeout<span class="hljs-function"> -&gt;</span>
+      self._abort type, message
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-52">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-52">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Destroys the Peer <span class="hljs-keyword">and</span> emits an error message.
+  The Peer <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> destroyed <span class="hljs-keyword">if</span> it<span class="hljs-string">'s in a disconnected state, in which case
+  it retains its disconnected state and its existing connections.
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-53">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-53">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">_abort</span> = <span class="hljs-params">(type, message)</span> -&gt;</span>
+    util.error <span class="hljs-string">"Aborting!"</span>
+    <span class="hljs-keyword">unless</span> <span class="hljs-property">@_lastServerId</span>
+      <span class="hljs-property">@destroy</span>()
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-property">@disconnect</span>()
+    <span class="hljs-property">@emitError</span> type, message
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-54">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-54">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Emits a typed error message.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-55">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-55">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">emitError</span> = <span class="hljs-params">(type, err)</span> -&gt;</span>
+    util.error <span class="hljs-string">"Error:"</span>, err
+    err = <span class="hljs-keyword">new</span> Error(err)  <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> err <span class="hljs-keyword">is</span> <span class="hljs-string">"string"</span>
+    err.type = type
+    <span class="hljs-property">@emit</span> <span class="hljs-string">"error"</span>, err
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-56">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-56">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Destroys the <span class="hljs-attribute">Peer</span>: closes all active connections as well as the connection
+  to the server.
+  <span class="hljs-attribute">Warning</span>: The peer can <span class="hljs-literal">no</span> longer create <span class="hljs-keyword">or</span> accept connections after being
+  destroyed.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-57">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-57">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">destroy</span> = -&gt;</span>
+    <span class="hljs-keyword">unless</span> <span class="hljs-property">@destroyed</span>
+      <span class="hljs-property">@_cleanup</span>()
+      <span class="hljs-property">@disconnect</span>()
+      <span class="hljs-property">@destroyed</span> = <span class="hljs-literal">true</span>
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-58">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-58">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Disconnects every connection <span class="hljs-literal">on</span> <span class="hljs-keyword">this</span> peer.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-59">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-59">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">_cleanup</span> = -&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@connections</span>
+      peers = Object.keys(<span class="hljs-property">@connections</span>)
+      i = <span class="hljs-number">0</span>
+      ii = peers.length
+
+      <span class="hljs-keyword">while</span> i &lt; ii
+        <span class="hljs-property">@_cleanupPeer</span> peers[i]
+        i++
+    <span class="hljs-property">@emit</span> <span class="hljs-string">"close"</span>
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-60">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-60">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Closes all connections to <span class="hljs-keyword">this</span> peer.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-61">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-61">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">_cleanupPeer</span> = <span class="hljs-params">(peer)</span> -&gt;</span>
+    connections = <span class="hljs-property">@connections</span>[peer]
+    j = <span class="hljs-number">0</span>
+    jj = connections.length
+
+    <span class="hljs-keyword">while</span> j &lt; jj
+      connections[j].close()
+      j += <span class="hljs-number">1</span>
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-62">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-62">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Disconnects the Peer<span class="hljs-string">'s connection to the PeerServer. Does not close any
+  active connections.
+  Warning: The peer can no longer create or accept connections after being
+  disconnected. It also cannot reconnect to the server.
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-63">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-63">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">disconnect</span> = -&gt;</span>
+    self = <span class="hljs-keyword">this</span>
+    util.setZeroTimeout<span class="hljs-function"> -&gt;</span>
+      <span class="hljs-keyword">unless</span> self.disconnected
+        self.disconnected = <span class="hljs-literal">true</span>
+        self.open = <span class="hljs-literal">false</span>
+        self.socket.close()  <span class="hljs-keyword">if</span> self.socket
+        self.emit <span class="hljs-string">"disconnected"</span>, self.id
+        self._lastServerId = self.id
+        self.id = <span class="hljs-literal">null</span>
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-64">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-64">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Attempts to reconnect <span class="hljs-reserved">with</span> the same ID.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-65">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-65">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">reconnect</span> = -&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@disconnected</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@destroyed</span>
+      util.log <span class="hljs-string">"Attempting reconnection to server with ID "</span> + <span class="hljs-property">@_lastServerId</span>
+      <span class="hljs-property">@disconnected</span> = <span class="hljs-literal">false</span>
+      <span class="hljs-property">@_initializeServerConnection</span>()
+      <span class="hljs-property">@_initialize</span> <span class="hljs-property">@_lastServerId</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@destroyed</span>
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error(<span class="hljs-string">"This peer cannot reconnect to the server. It has already been destroyed."</span>)
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@disconnected</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@open</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-66">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-66">&#182;</a>
+              </div>
+              <p>Do nothing. We’re still connecting the first time.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      util.error <span class="hljs-string">"In a hurry? We're still trying to make the initial connection!"</span>
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error(<span class="hljs-string">"Peer "</span> + <span class="hljs-property">@id</span> + <span class="hljs-string">" cannot reconnect because it is not disconnected from the server!"</span>)
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-67">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-67">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Get a list <span class="hljs-keyword">of</span> available peer IDs. If you<span class="hljs-string">'re running your own server, you'</span>ll
+  want to set <span class="hljs-attribute">allow_discovery</span>: <span class="hljs-literal">true</span> <span class="hljs-keyword">in</span> the PeerServer options. If you<span class="hljs-string">'re using
+  the cloud server, email team@peerjs.com to get the functionality enabled for
+  your key.
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-68">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-68">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Peer</span>::<span class="hljs-function"><span class="hljs-title">listAllPeers</span> = <span class="hljs-params">(cb)</span> -&gt;</span>
+    cb = cb <span class="hljs-keyword">or</span><span class="hljs-function"> -&gt;</span>
+
+    self = <span class="hljs-keyword">this</span>
+    http = <span class="hljs-keyword">new</span> XMLHttpRequest()
+    protocol = (<span class="hljs-keyword">if</span> <span class="hljs-property">@options</span>.secure <span class="hljs-keyword">then</span> <span class="hljs-string">"https://"</span> <span class="hljs-keyword">else</span> <span class="hljs-string">"http://"</span>)
+    url = protocol + <span class="hljs-property">@options</span>.host + <span class="hljs-string">":"</span> + <span class="hljs-property">@options</span>.port + <span class="hljs-property">@options</span>.path + <span class="hljs-property">@options</span>.key + <span class="hljs-string">"/peers"</span>
+    queryString = <span class="hljs-string">"?ts="</span> + <span class="hljs-keyword">new</span> Date().getTime() + <span class="hljs-string">""</span> + Math.random()
+    url += queryString</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-69">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-69">&#182;</a>
+              </div>
+              <p>If there’s no ID we need to wait for one before trying to init socket.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    http.open <span class="hljs-string">"get"</span>, url, <span class="hljs-literal">true</span>
+    http.<span class="hljs-function"><span class="hljs-title">onerror</span> = <span class="hljs-params">(e)</span> -&gt;</span>
+      self._abort <span class="hljs-string">"server-error"</span>, <span class="hljs-string">"Could not get peers from the server."</span>
+      cb []
+      <span class="hljs-keyword">return</span>
+
+    http.<span class="hljs-function"><span class="hljs-title">onreadystatechange</span> = -&gt;</span>
+      <span class="hljs-keyword">return</span>  <span class="hljs-keyword">if</span> http.readyState <span class="hljs-keyword">isnt</span> <span class="hljs-number">4</span>
+      <span class="hljs-keyword">if</span> http.status <span class="hljs-keyword">is</span> <span class="hljs-number">401</span>
+        helpfulError = <span class="hljs-string">""</span>
+        <span class="hljs-keyword">if</span> self.options.host <span class="hljs-keyword">isnt</span> util.CLOUD_HOST
+          helpfulError = <span class="hljs-string">"It looks like you're using the cloud server. You can email "</span> + <span class="hljs-string">"team@peerjs.com to enable peer listing for your API key."</span>
+        <span class="hljs-keyword">else</span>
+          helpfulError = <span class="hljs-string">"You need to enable `allow_discovery` on your self-hosted"</span> + <span class="hljs-string">" PeerServer to use this feature."</span>
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error(<span class="hljs-string">"It doesn't look like you have permission to list peers IDs. "</span> + helpfulError)
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> http.status <span class="hljs-keyword">isnt</span> <span class="hljs-number">200</span>
+        cb []
+      <span class="hljs-keyword">else</span>
+        cb JSON.parse(http.responseText)
+      <span class="hljs-keyword">return</span>
+
+    http.send <span class="hljs-literal">null</span>
+    <span class="hljs-keyword">return</span>
+
+  <span class="hljs-keyword">return</span> Peer
+
+)</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

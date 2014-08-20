@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>util.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="dataconnection.html">
+                dataconnection.coffee
+              </a>
+            
+              
+              <a class="source" href="mediaconnection.html">
+                mediaconnection.coffee
+              </a>
+            
+              
+              <a class="source" href="negotiator.html">
+                negotiator.coffee
+              </a>
+            
+              
+              <a class="source" href="peer.html">
+                peer.coffee
+              </a>
+            
+              
+              <a class="source" href="ice_candidate.html">
+                ice_candidate.coffee
+              </a>
+            
+              
+              <a class="source" href="peer_connection.html">
+                peer_connection.coffee
+              </a>
+            
+              
+              <a class="source" href="session_description.html">
+                session_description.coffee
+              </a>
+            
+              
+              <a class="source" href="socket.html">
+                socket.coffee
+              </a>
+            
+              
+              <a class="source" href="util.html">
+                util.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>util.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-params">((root, factory) -&gt;
+  <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> define <span class="hljs-keyword">is</span> <span class="hljs-string">"function"</span> <span class="hljs-keyword">and</span> define.amd
+    define [], -&gt; root.util = factory()
+  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> exports <span class="hljs-keyword">is</span> <span class="hljs-string">"object"</span>
+    <span class="hljs-built_in">module</span>.exports = factory()
+  <span class="hljs-keyword">else</span>
+    root.util = factory()
+)(@, () -&gt;
+
+  defaultConfig = iceServers: [url: <span class="hljs-string">"stun:stun.l.google.com:19302"</span>]
+  dataCount = <span class="hljs-number">1</span>
+  util =
+    noop: -&gt;
+
+    CLOUD_HOST: <span class="hljs-string">"0.peerjs.com"</span>
+    CLOUD_PORT: <span class="hljs-number">9000</span>
+
+</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Browsers that need chunking:</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-attribute">chunkedBrowsers</span>:
+      <span class="hljs-attribute">Chrome</span>: <span class="hljs-number">1</span>
+
+    <span class="hljs-attribute">chunkedMTU</span>: <span class="hljs-number">16300</span> <span class="hljs-comment"># The original 60000 bytes setting does not work when sending data from Firefox to Chrome,</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>which is “cut off” after 16384 bytes and delivered individually.</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Logging logic</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-attribute">logLevel</span>: <span class="hljs-number">0</span>
+    <span class="hljs-attribute">setLogLevel</span>: <span class="hljs-function"><span class="hljs-params">(level)</span> -&gt;</span>
+      debugLevel = parseInt(level, <span class="hljs-number">10</span>)
+      <span class="hljs-keyword">unless</span> isNaN(parseInt(level, <span class="hljs-number">10</span>))
+        util.logLevel = debugLevel
+      <span class="hljs-keyword">else</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>If they are using truthy/falsy values for debug</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        util.logLevel = (<span class="hljs-keyword">if</span> level <span class="hljs-keyword">then</span> <span class="hljs-number">3</span> <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>)
+      util.log = util.warn = util.error = util.noop
+      util.error = util._printWith(<span class="hljs-string">"ERROR"</span>)  <span class="hljs-keyword">if</span> util.logLevel &gt; <span class="hljs-number">0</span>
+      util.warn = util._printWith(<span class="hljs-string">"WARNING"</span>)  <span class="hljs-keyword">if</span> util.logLevel &gt; <span class="hljs-number">1</span>
+      util.log = util._print  <span class="hljs-keyword">if</span> util.logLevel &gt; <span class="hljs-number">2</span>
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-attribute">setLogFunction</span>: <span class="hljs-function"><span class="hljs-params">(fn)</span> -&gt;</span>
+      <span class="hljs-keyword">if</span> fn.constructor <span class="hljs-keyword">isnt</span> Function
+        util.warn <span class="hljs-string">"The log function you passed in is not a function. Defaulting to regular logs."</span>
+      <span class="hljs-keyword">else</span>
+        util._print = fn
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-attribute">_printWith</span>: <span class="hljs-function"><span class="hljs-params">(prefix)</span> -&gt;</span><span class="hljs-function">
+      -&gt;</span>
+        copy = <span class="hljs-attribute">Array</span>::slice.call(arguments_)
+        copy.unshift prefix
+        util._print.apply util, copy
+        <span class="hljs-keyword">return</span>
+
+    <span class="hljs-attribute">_print</span>:<span class="hljs-function"> -&gt;</span>
+      err = <span class="hljs-literal">false</span>
+      copy = <span class="hljs-attribute">Array</span>::slice.call(arguments_)
+      copy.unshift <span class="hljs-string">"PeerJS: "</span>
+      i = <span class="hljs-number">0</span>
+      l = copy.length
+
+      <span class="hljs-keyword">while</span> i &lt; l
+        <span class="hljs-keyword">if</span> copy[i] <span class="hljs-keyword">instanceof</span> Error
+          copy[i] = <span class="hljs-string">"("</span> + copy[i].name + <span class="hljs-string">") "</span> + copy[i].message
+          err = <span class="hljs-literal">true</span>
+        i++
+      (<span class="hljs-keyword">if</span> err <span class="hljs-keyword">then</span> <span class="hljs-built_in">console</span>.error.apply(<span class="hljs-built_in">console</span>, copy) <span class="hljs-keyword">else</span> <span class="hljs-built_in">console</span>.log.apply(<span class="hljs-built_in">console</span>, copy))
+      <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Returns browser-agnostic default config</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-attribute">defaultConfig</span>: defaultConfig</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Returns the current browser.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-attribute">browser</span>: (<span class="hljs-function">-&gt;</span>
+      <span class="hljs-keyword">if</span> <span class="hljs-built_in">window</span>.mozRTCPeerConnection
+        <span class="hljs-string">"Firefox"</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-built_in">window</span>.webkitRTCPeerConnection
+        <span class="hljs-string">"Chrome"</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-built_in">window</span>.RTCPeerConnection
+        <span class="hljs-string">"Supported"</span>
+      <span class="hljs-keyword">else</span>
+        <span class="hljs-string">"Unsupported"</span>
+    )()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Lists which features are supported</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-attribute">supports</span>: (<span class="hljs-function">-&gt;</span>
+      <span class="hljs-keyword">return</span> {}  <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> RTCPeerConnection <span class="hljs-keyword">is</span> <span class="hljs-string">"undefined"</span>
+      data = <span class="hljs-literal">true</span>
+      audioVideo = <span class="hljs-literal">true</span>
+      binaryBlob = <span class="hljs-literal">false</span>
+      sctp = <span class="hljs-literal">false</span>
+      onnegotiationneeded = !!<span class="hljs-built_in">window</span>.webkitRTCPeerConnection
+      pc = <span class="hljs-literal">undefined</span>
+      dc = <span class="hljs-literal">undefined</span>
+      <span class="hljs-keyword">try</span>
+        pc = <span class="hljs-keyword">new</span> RTCPeerConnection(defaultConfig,
+          <span class="hljs-attribute">optional</span>: [<span class="hljs-attribute">RtpDataChannels</span>: <span class="hljs-literal">true</span>]
+        )
+      <span class="hljs-keyword">catch</span> e
+        data = <span class="hljs-literal">false</span>
+        audioVideo = <span class="hljs-literal">false</span>
+      <span class="hljs-keyword">if</span> data
+        <span class="hljs-keyword">try</span>
+          dc = pc.createDataChannel(<span class="hljs-string">"_PEERJSTEST"</span>)
+        <span class="hljs-keyword">catch</span> e
+          data = <span class="hljs-literal">false</span>
+      <span class="hljs-keyword">if</span> data</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Binary test</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">try</span>
+          dc.binaryType = <span class="hljs-string">"blob"</span>
+          binaryBlob = <span class="hljs-literal">true</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Reliable test.
+Unfortunately Chrome is a bit unreliable about whether or not they
+support reliable.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        reliablePC = <span class="hljs-keyword">new</span> RTCPeerConnection(defaultConfig, {})
+        <span class="hljs-keyword">try</span>
+          reliableDC = reliablePC.createDataChannel(<span class="hljs-string">"_PEERJSRELIABLETEST"</span>, {})
+          sctp = reliableDC.reliable
+        reliablePC.close()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>FIXME: not really the best check…</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      audioVideo = !!pc.addStream  <span class="hljs-keyword">if</span> audioVideo</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>FIXME: this is not great because in theory it doesn’t work for
+av-only browsers (?).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> onnegotiationneeded <span class="hljs-keyword">and</span> data</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>sync default check.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        negotiationPC = <span class="hljs-keyword">new</span> RTCPeerConnection(defaultConfig,
+          <span class="hljs-attribute">optional</span>: [<span class="hljs-attribute">RtpDataChannels</span>: <span class="hljs-literal">true</span>]
+        )
+        negotiationPC.<span class="hljs-function"><span class="hljs-title">onnegotiationneeded</span> = -&gt;</span>
+          onnegotiationneeded = <span class="hljs-literal">true</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>async check.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          util.supports.onnegotiationneeded = <span class="hljs-literal">true</span>  <span class="hljs-keyword">if</span> util <span class="hljs-keyword">and</span> util.supports
+          <span class="hljs-keyword">return</span>
+
+        negotiationDC = negotiationPC.createDataChannel(<span class="hljs-string">"_PEERJSNEGOTIATIONTEST"</span>)
+        setTimeout (<span class="hljs-function">-&gt;</span>
+          negotiationPC.close()
+          <span class="hljs-keyword">return</span>
+        ), <span class="hljs-number">1000</span>
+      pc.close()  <span class="hljs-keyword">if</span> pc
+      <span class="hljs-attribute">audioVideo</span>: audioVideo
+      <span class="hljs-attribute">data</span>: data
+      <span class="hljs-attribute">binaryBlob</span>: binaryBlob
+      <span class="hljs-attribute">binary</span>: sctp <span class="hljs-comment"># deprecated; sctp implies binary support.</span>
+      <span class="hljs-attribute">reliable</span>: sctp <span class="hljs-comment"># deprecated; sctp implies reliable data.</span>
+      <span class="hljs-attribute">sctp</span>: sctp
+      <span class="hljs-attribute">onnegotiationneeded</span>: onnegotiationneeded
+    )()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Ensure alphanumeric ids</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-attribute">validateId</span>: <span class="hljs-function"><span class="hljs-params">(id)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Allow empty ids</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">not</span> id <span class="hljs-keyword">or</span> <span class="hljs-regexp">/^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/</span>.exec(id)
+
+    <span class="hljs-attribute">validateKey</span>: <span class="hljs-function"><span class="hljs-params">(key)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Allow empty keys</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">not</span> key <span class="hljs-keyword">or</span> <span class="hljs-regexp">/^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/</span>.exec(key)
+
+    <span class="hljs-attribute">debug</span>: <span class="hljs-literal">false</span>
+    <span class="hljs-attribute">inherits</span>: <span class="hljs-function"><span class="hljs-params">(ctor, superCtor)</span> -&gt;</span>
+      ctor.super_ = superCtor
+      <span class="hljs-attribute">ctor</span>:: = Object.create(<span class="hljs-attribute">superCtor</span>::,
+        <span class="hljs-attribute">constructor</span>:
+          <span class="hljs-attribute">value</span>: ctor
+          <span class="hljs-attribute">enumerable</span>: <span class="hljs-literal">false</span>
+          <span class="hljs-attribute">writable</span>: <span class="hljs-literal">true</span>
+          <span class="hljs-attribute">configurable</span>: <span class="hljs-literal">true</span>
+      )
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-attribute">extend</span>: <span class="hljs-function"><span class="hljs-params">(dest, source)</span> -&gt;</span>
+      <span class="hljs-keyword">for</span> key <span class="hljs-keyword">of</span> source
+        dest[key] = source[key]  <span class="hljs-keyword">if</span> source.hasOwnProperty(key)
+      dest
+
+    <span class="hljs-attribute">pack</span>: BinaryPack.pack
+    <span class="hljs-attribute">unpack</span>: BinaryPack.unpack
+    <span class="hljs-attribute">log</span>:<span class="hljs-function"> -&gt;</span>
+      <span class="hljs-keyword">if</span> util.debug
+        err = <span class="hljs-literal">false</span>
+        copy = <span class="hljs-attribute">Array</span>::slice.call(arguments_)
+        copy.unshift <span class="hljs-string">"PeerJS: "</span>
+        i = <span class="hljs-number">0</span>
+        l = copy.length
+
+        <span class="hljs-keyword">while</span> i &lt; l
+          <span class="hljs-keyword">if</span> copy[i] <span class="hljs-keyword">instanceof</span> Error
+            copy[i] = <span class="hljs-string">"("</span> + copy[i].name + <span class="hljs-string">") "</span> + copy[i].message
+            err = <span class="hljs-literal">true</span>
+          i++
+        (<span class="hljs-keyword">if</span> err <span class="hljs-keyword">then</span> <span class="hljs-built_in">console</span>.error.apply(<span class="hljs-built_in">console</span>, copy) <span class="hljs-keyword">else</span> <span class="hljs-built_in">console</span>.log.apply(<span class="hljs-built_in">console</span>, copy))
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-attribute">setZeroTimeout</span>: <span class="hljs-function"><span class="hljs-params">((<span class="hljs-built_in">global</span>) -&gt;
+
+</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Like setTimeout, but only takes a function argument.     There’s
+no time argument (always zero) and no arguments (you have to
+use a closure).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-function"><span class="hljs-title">setZeroTimeoutPostMessage</span> = <span class="hljs-params">(fn)</span> -&gt;</span>
+        timeouts.push fn
+        <span class="hljs-built_in">global</span>.postMessage messageName, <span class="hljs-string">"*"</span>
+        <span class="hljs-keyword">return</span>
+      <span class="hljs-function"><span class="hljs-title">handleMessage</span> = <span class="hljs-params">(event)</span> -&gt;</span>
+        <span class="hljs-keyword">if</span> event.source <span class="hljs-keyword">is</span> <span class="hljs-built_in">global</span> <span class="hljs-keyword">and</span> event.data <span class="hljs-keyword">is</span> messageName
+          event.stopPropagation()  <span class="hljs-keyword">if</span> event.stopPropagation
+          timeouts.shift()()  <span class="hljs-keyword">if</span> timeouts.length
+        <span class="hljs-keyword">return</span>
+      timeouts = []
+      messageName = <span class="hljs-string">"zero-timeout-message"</span>
+      <span class="hljs-keyword">if</span> <span class="hljs-built_in">global</span>.addEventListener
+        <span class="hljs-built_in">global</span>.addEventListener <span class="hljs-string">"message"</span>, handleMessage, <span class="hljs-literal">true</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-built_in">global</span>.attachEvent <span class="hljs-string">"onmessage"</span>, handleMessage  <span class="hljs-keyword">if</span> <span class="hljs-built_in">global</span>.attachEvent
+      setZeroTimeoutPostMessage
+    (<span class="hljs-keyword">this</span>))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Binary stuff</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>chunks a blob.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-attribute">chunk</span>: <span class="hljs-function"><span class="hljs-params">(bl)</span> -&gt;</span>
+      chunks = []
+      size = bl.size
+      start = index = <span class="hljs-number">0</span>
+      total = Math.ceil(size / util.chunkedMTU)
+      <span class="hljs-keyword">while</span> start &lt; size
+        end = Math.min(size, start + util.chunkedMTU)
+        b = bl.slice(start, end)
+        chunk =
+          <span class="hljs-attribute">__peerData</span>: dataCount
+          <span class="hljs-attribute">n</span>: index
+          <span class="hljs-attribute">data</span>: b
+          <span class="hljs-attribute">total</span>: total
+
+        chunks.push chunk
+        start = end
+        index += <span class="hljs-number">1</span>
+      dataCount += <span class="hljs-number">1</span>
+      chunks
+
+    <span class="hljs-attribute">blobToArrayBuffer</span>: <span class="hljs-function"><span class="hljs-params">(blob, cb)</span> -&gt;</span>
+      fr = <span class="hljs-keyword">new</span> FileReader()
+      fr.<span class="hljs-function"><span class="hljs-title">onload</span> = <span class="hljs-params">(evt)</span> -&gt;</span>
+        cb evt.target.result
+        <span class="hljs-keyword">return</span>
+
+      fr.readAsArrayBuffer blob
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-attribute">blobToBinaryString</span>: <span class="hljs-function"><span class="hljs-params">(blob, cb)</span> -&gt;</span>
+      fr = <span class="hljs-keyword">new</span> FileReader()
+      fr.<span class="hljs-function"><span class="hljs-title">onload</span> = <span class="hljs-params">(evt)</span> -&gt;</span>
+        cb evt.target.result
+        <span class="hljs-keyword">return</span>
+
+      fr.readAsBinaryString blob
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-attribute">binaryStringToArrayBuffer</span>: <span class="hljs-function"><span class="hljs-params">(binary)</span> -&gt;</span>
+      byteArray = <span class="hljs-keyword">new</span> Uint8Array(binary.length)
+      i = <span class="hljs-number">0</span>
+
+      <span class="hljs-keyword">while</span> i &lt; binary.length
+        byteArray[i] = binary.charCodeAt(i) &amp; <span class="hljs-number">0xff</span>
+        i++
+      byteArray.buffer
+
+    <span class="hljs-attribute">randomToken</span>:<span class="hljs-function"> -&gt;</span>
+      Math.random().toString(<span class="hljs-number">36</span>).substr <span class="hljs-number">2</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-attribute">isSecure</span>:<span class="hljs-function"> -&gt;</span>
+      location.protocol <span class="hljs-keyword">is</span> <span class="hljs-string">"https:"</span>
+
+  <span class="hljs-keyword">return</span> util
+
+)</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>mediaconnection.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="dataconnection.html">
+                dataconnection.coffee
+              </a>
+            
+              
+              <a class="source" href="mediaconnection.html">
+                mediaconnection.coffee
+              </a>
+            
+              
+              <a class="source" href="negotiator.html">
+                negotiator.coffee
+              </a>
+            
+              
+              <a class="source" href="peer.html">
+                peer.coffee
+              </a>
+            
+              
+              <a class="source" href="ice_candidate.html">
+                ice_candidate.coffee
+              </a>
+            
+              
+              <a class="source" href="peer_connection.html">
+                peer_connection.coffee
+              </a>
+            
+              
+              <a class="source" href="session_description.html">
+                session_description.coffee
+              </a>
+            
+              
+              <a class="source" href="socket.html">
+                socket.coffee
+              </a>
+            
+              
+              <a class="source" href="util.html">
+                util.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>mediaconnection.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-params">((root, factory) -&gt;
+  <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> define <span class="hljs-keyword">is</span> <span class="hljs-string">"function"</span> <span class="hljs-keyword">and</span> define.amd
+    define [], -&gt; root.MediaConnection = factory()
+  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> exports <span class="hljs-keyword">is</span> <span class="hljs-string">"object"</span>
+    <span class="hljs-built_in">module</span>.exports = factory()
+  <span class="hljs-keyword">else</span>
+    root.MediaConnection = factory()
+)(@, () -&gt;
+
+</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Wraps the streaming interface between two Peers.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-function"><span class="hljs-title">MediaConnection</span> = <span class="hljs-params">(peer, provider, options)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> MediaConnection(peer, provider, options)  <span class="hljs-keyword">unless</span> <span class="hljs-keyword">this</span> <span class="hljs-keyword">instanceof</span> MediaConnection
+    EventEmitter.call <span class="hljs-keyword">this</span>
+    <span class="hljs-property">@options</span> = util.extend({}, options)
+    <span class="hljs-property">@open</span> = <span class="hljs-literal">false</span>
+    <span class="hljs-property">@type</span> = <span class="hljs-string">"media"</span>
+    <span class="hljs-property">@peer</span> = peer
+    <span class="hljs-property">@provider</span> = provider
+    <span class="hljs-property">@metadata</span> = <span class="hljs-property">@options</span>.metadata
+    <span class="hljs-property">@localStream</span> = <span class="hljs-property">@options</span>._stream
+    <span class="hljs-property">@id</span> = <span class="hljs-property">@options</span>.connectionId <span class="hljs-keyword">or</span> MediaConnection._idPrefix + util.randomToken()
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@localStream</span>
+      Negotiator.startConnection <span class="hljs-keyword">this</span>,
+        <span class="hljs-attribute">_stream</span>: <span class="hljs-property">@localStream</span>
+        <span class="hljs-attribute">originator</span>: <span class="hljs-literal">true</span>
+
+    <span class="hljs-keyword">return</span>
+
+  util.inherits MediaConnection, EventEmitter
+
+  MediaConnection._idPrefix = <span class="hljs-string">"mc_"</span>
+
+  <span class="hljs-attribute">MediaConnection</span>::<span class="hljs-function"><span class="hljs-title">addStream</span> = <span class="hljs-params">(remoteStream)</span> -&gt;</span>
+    util.log <span class="hljs-string">"Receiving stream"</span>, remoteStream
+    <span class="hljs-property">@remoteStream</span> = remoteStream
+    <span class="hljs-property">@emit</span> <span class="hljs-string">"stream"</span>, remoteStream <span class="hljs-comment"># Should we call this `open`?</span>
+    <span class="hljs-keyword">return</span>
+
+  <span class="hljs-attribute">MediaConnection</span>::<span class="hljs-function"><span class="hljs-title">handleMessage</span> = <span class="hljs-params">(message)</span> -&gt;</span>
+    payload = message.payload
+    <span class="hljs-keyword">switch</span> message.type
+      <span class="hljs-keyword">when</span> <span class="hljs-string">"ANSWER"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Forward to negotiator</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        Negotiator.handleSDP message.type, <span class="hljs-keyword">this</span>, payload.sdp
+        <span class="hljs-property">@open</span> = <span class="hljs-literal">true</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-string">"CANDIDATE"</span>
+        Negotiator.handleCandidate <span class="hljs-keyword">this</span>, payload.candidate
+      <span class="hljs-keyword">else</span>
+        util.warn <span class="hljs-string">"Unrecognized message type:"</span>, message.type, <span class="hljs-string">"from peer:"</span>, <span class="hljs-property">@peer</span>
+
+  <span class="hljs-attribute">MediaConnection</span>::<span class="hljs-function"><span class="hljs-title">answer</span> = <span class="hljs-params">(stream)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@localStream</span>
+      util.warn <span class="hljs-string">"Local stream already exists on this MediaConnection. Are you answering a call twice?"</span>
+      <span class="hljs-keyword">return</span>
+    <span class="hljs-property">@options</span>._payload._stream = stream
+    <span class="hljs-property">@localStream</span> = stream
+    Negotiator.startConnection <span class="hljs-keyword">this</span>, <span class="hljs-property">@options</span>._payload</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Retrieve lost messages stored because PeerConnection not set up.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    messages = <span class="hljs-property">@provider</span>._getMessages(<span class="hljs-property">@id</span>)
+    i = <span class="hljs-number">0</span>
+    ii = messages.length
+
+    <span class="hljs-keyword">while</span> i &lt; ii
+      <span class="hljs-property">@handleMessage</span> messages[i]
+      i += <span class="hljs-number">1</span>
+    <span class="hljs-property">@open</span> = <span class="hljs-literal">true</span>
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Exposed functionality for users.</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Allows user to close connection.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">MediaConnection</span>::<span class="hljs-function"><span class="hljs-title">close</span> = -&gt;</span>
+    <span class="hljs-keyword">return</span>  <span class="hljs-keyword">unless</span> <span class="hljs-property">@open</span>
+    <span class="hljs-property">@open</span> = <span class="hljs-literal">false</span>
+    Negotiator.cleanup <span class="hljs-keyword">this</span>
+    <span class="hljs-property">@emit</span> <span class="hljs-string">"close"</span>
+    <span class="hljs-keyword">return</span>
+
+  <span class="hljs-keyword">return</span> MediaConnection
+
+)</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>dataconnection.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="dataconnection.html">
+                dataconnection.coffee
+              </a>
+            
+              
+              <a class="source" href="mediaconnection.html">
+                mediaconnection.coffee
+              </a>
+            
+              
+              <a class="source" href="negotiator.html">
+                negotiator.coffee
+              </a>
+            
+              
+              <a class="source" href="peer.html">
+                peer.coffee
+              </a>
+            
+              
+              <a class="source" href="ice_candidate.html">
+                ice_candidate.coffee
+              </a>
+            
+              
+              <a class="source" href="peer_connection.html">
+                peer_connection.coffee
+              </a>
+            
+              
+              <a class="source" href="session_description.html">
+                session_description.coffee
+              </a>
+            
+              
+              <a class="source" href="socket.html">
+                socket.coffee
+              </a>
+            
+              
+              <a class="source" href="util.html">
+                util.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>dataconnection.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-params">((root, factory) -&gt;
+  <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> define <span class="hljs-keyword">is</span> <span class="hljs-string">"function"</span> <span class="hljs-keyword">and</span> define.amd
+    define [], -&gt; root.DataConnection = factory()
+  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> exports <span class="hljs-keyword">is</span> <span class="hljs-string">"object"</span>
+    <span class="hljs-built_in">module</span>.exports = factory()
+  <span class="hljs-keyword">else</span>
+    root.DataConnection = factory()
+)(@, () -&gt;
+
+</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Wraps a DataChannel between two Peers</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-function"><span class="hljs-title">DataConnection</span> = <span class="hljs-params">(peer, provider, options)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> DataConnection(peer, provider, options)  <span class="hljs-keyword">unless</span> <span class="hljs-keyword">this</span> <span class="hljs-keyword">instanceof</span> DataConnection
+    EventEmitter.call <span class="hljs-keyword">this</span>
+    <span class="hljs-property">@options</span> = util.extend(
+      <span class="hljs-attribute">serialization</span>: <span class="hljs-string">"binary"</span>
+      <span class="hljs-attribute">reliable</span>: <span class="hljs-literal">false</span>
+    , options)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Connection is not open yet.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@open</span> = <span class="hljs-literal">false</span>
+    <span class="hljs-property">@type</span> = <span class="hljs-string">"data"</span>
+    <span class="hljs-property">@peer</span> = peer
+    <span class="hljs-property">@provider</span> = provider
+    <span class="hljs-property">@id</span> = <span class="hljs-property">@options</span>.connectionId <span class="hljs-keyword">or</span> DataConnection._idPrefix + util.randomToken()
+    <span class="hljs-property">@label</span> = <span class="hljs-property">@options</span>.label <span class="hljs-keyword">or</span> <span class="hljs-property">@id</span>
+    <span class="hljs-property">@metadata</span> = <span class="hljs-property">@options</span>.metadata
+    <span class="hljs-property">@serialization</span> = <span class="hljs-property">@options</span>.serialization
+    <span class="hljs-property">@reliable</span> = <span class="hljs-property">@options</span>.reliable</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Data channel buffering.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@_buffer</span> = []
+    <span class="hljs-property">@_buffering</span> = <span class="hljs-literal">false</span>
+    <span class="hljs-property">@bufferSize</span> = <span class="hljs-number">0</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>For storing large data.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@_chunkedData</span> = {}
+    <span class="hljs-property">@_peerBrowser</span> = <span class="hljs-property">@options</span>._payload.browser  <span class="hljs-keyword">if</span> <span class="hljs-property">@options</span>._payload
+    Negotiator.startConnection <span class="hljs-keyword">this</span>, <span class="hljs-property">@options</span>._payload <span class="hljs-keyword">or</span> <span class="hljs-attribute">originator</span>: <span class="hljs-literal">true</span>
+    <span class="hljs-keyword">return</span>
+  util.inherits DataConnection, EventEmitter
+  DataConnection._idPrefix = <span class="hljs-string">"dc_"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Called <span class="hljs-keyword">by</span> the Negotiator <span class="hljs-keyword">when</span> the DataChannel <span class="hljs-keyword">is</span> ready.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">DataConnection</span>::<span class="hljs-function"><span class="hljs-title">initialize</span> = <span class="hljs-params">(dc)</span> -&gt;</span>
+    <span class="hljs-property">@_dc</span> = <span class="hljs-property">@dataChannel</span> = dc
+    <span class="hljs-property">@_configureDataChannel</span>()
+    <span class="hljs-keyword">return</span>
+
+  <span class="hljs-attribute">DataConnection</span>::<span class="hljs-function"><span class="hljs-title">_configureDataChannel</span> = -&gt;</span>
+    self = <span class="hljs-keyword">this</span>
+    <span class="hljs-property">@_dc</span>.binaryType = <span class="hljs-string">"arraybuffer"</span>  <span class="hljs-keyword">if</span> util.supports.sctp
+    <span class="hljs-property">@_dc</span>.<span class="hljs-function"><span class="hljs-title">onopen</span> = -&gt;</span>
+      util.log <span class="hljs-string">"Data channel connection success"</span>
+      self.open = <span class="hljs-literal">true</span>
+      self.emit <span class="hljs-string">"open"</span>
+      <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Use the Reliable shim for non Firefox browsers</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@_reliable</span> = <span class="hljs-keyword">new</span> Reliable(<span class="hljs-property">@_dc</span>, util.debug)  <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> util.supports.sctp <span class="hljs-keyword">and</span> <span class="hljs-property">@reliable</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@_reliable</span>
+      <span class="hljs-property">@_reliable</span>.<span class="hljs-function"><span class="hljs-title">onmessage</span> = <span class="hljs-params">(msg)</span> -&gt;</span>
+        self.emit <span class="hljs-string">"data"</span>, msg
+        <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-property">@_dc</span>.<span class="hljs-function"><span class="hljs-title">onmessage</span> = <span class="hljs-params">(e)</span> -&gt;</span>
+        self._handleDataMessage e
+        <span class="hljs-keyword">return</span>
+    <span class="hljs-property">@_dc</span>.<span class="hljs-function"><span class="hljs-title">onclose</span> = <span class="hljs-params">(e)</span> -&gt;</span>
+      util.log <span class="hljs-string">"DataChannel closed for:"</span>, self.peer
+      self.close()
+      <span class="hljs-keyword">return</span>
+
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Handles a DataChannel message.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">DataConnection</span>::<span class="hljs-function"><span class="hljs-title">_handleDataMessage</span> = <span class="hljs-params">(e)</span> -&gt;</span>
+    self = <span class="hljs-keyword">this</span>
+    data = e.data
+    datatype = data.constructor
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@serialization</span> <span class="hljs-keyword">is</span> <span class="hljs-string">"binary"</span> <span class="hljs-keyword">or</span> <span class="hljs-property">@serialization</span> <span class="hljs-keyword">is</span> <span class="hljs-string">"binary-utf8"</span>
+      <span class="hljs-keyword">if</span> datatype <span class="hljs-keyword">is</span> Blob</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Datatype should never be blob</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        util.blobToArrayBuffer data, <span class="hljs-function"><span class="hljs-params">(ab)</span> -&gt;</span>
+          data = util.unpack(ab)
+          self.emit <span class="hljs-string">"data"</span>, data
+          <span class="hljs-keyword">return</span>
+
+        <span class="hljs-keyword">return</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> datatype <span class="hljs-keyword">is</span> ArrayBuffer
+        data = util.unpack(data)
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> datatype <span class="hljs-keyword">is</span> String</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>String fallback for binary data for browsers that don’t support binary yet</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        ab = util.binaryStringToArrayBuffer(data)
+        data = util.unpack(ab)
+    <span class="hljs-keyword">else</span> data = JSON.parse(data)  <span class="hljs-keyword">if</span> <span class="hljs-property">@serialization</span> <span class="hljs-keyword">is</span> <span class="hljs-string">"json"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Check if we’ve chunked—if so, piece things back together.
+We’re guaranteed that this isn’t 0.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> data.__peerData
+      id = data.__peerData
+      chunkInfo = <span class="hljs-property">@_chunkedData</span>[id] <span class="hljs-keyword">or</span>
+        <span class="hljs-attribute">data</span>: []
+        <span class="hljs-attribute">count</span>: <span class="hljs-number">0</span>
+        <span class="hljs-attribute">total</span>: data.total
+
+      chunkInfo.data[data.n] = data.data
+      chunkInfo.count += <span class="hljs-number">1</span>
+      <span class="hljs-keyword">if</span> chunkInfo.total <span class="hljs-keyword">is</span> chunkInfo.count</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Clean up before making the recursive call to <code>_handleDataMessage</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">delete</span> <span class="hljs-property">@_chunkedData</span>[id]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>We’ve received all the chunks—time to construct the complete data.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        data = <span class="hljs-keyword">new</span> Blob(chunkInfo.data)
+        <span class="hljs-property">@_handleDataMessage</span> <span class="hljs-attribute">data</span>: data
+      <span class="hljs-property">@_chunkedData</span>[id] = chunkInfo
+      <span class="hljs-keyword">return</span>
+    <span class="hljs-property">@emit</span> <span class="hljs-string">"data"</span>, data
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Exposed functionality <span class="hljs-keyword">for</span> users.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Allows user to close connection.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">DataConnection</span>::<span class="hljs-function"><span class="hljs-title">close</span> = -&gt;</span>
+    <span class="hljs-keyword">return</span>  <span class="hljs-keyword">unless</span> <span class="hljs-property">@open</span>
+    <span class="hljs-property">@open</span> = <span class="hljs-literal">false</span>
+    Negotiator.cleanup <span class="hljs-keyword">this</span>
+    <span class="hljs-property">@emit</span> <span class="hljs-string">"close"</span>
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Allows user to send data.</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <h1 id="-">#</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">DataConnection</span>::<span class="hljs-function"><span class="hljs-title">send</span> = <span class="hljs-params">(data, chunked)</span> -&gt;</span>
+    <span class="hljs-keyword">unless</span> <span class="hljs-property">@open</span>
+      <span class="hljs-property">@emit</span> <span class="hljs-string">"error"</span>, <span class="hljs-keyword">new</span> Error(<span class="hljs-string">"Connection is not open. You should listen for the `open` event before sending messages."</span>)
+      <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@_reliable</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Note: reliable shim sending will make it so that you cannot customize
+serialization.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-property">@_reliable</span>.send data
+      <span class="hljs-keyword">return</span>
+    self = <span class="hljs-keyword">this</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@serialization</span> <span class="hljs-keyword">is</span> <span class="hljs-string">"json"</span>
+      <span class="hljs-property">@_bufferedSend</span> JSON.stringify(data)
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@serialization</span> <span class="hljs-keyword">is</span> <span class="hljs-string">"binary"</span> <span class="hljs-keyword">or</span> <span class="hljs-property">@serialization</span> <span class="hljs-keyword">is</span> <span class="hljs-string">"binary-utf8"</span>
+      blob = util.pack(data)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>For Chrome-Firefox interoperability, we need to make Firefox “chunk”
+the data it sends out.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      needsChunking = util.chunkedBrowsers[<span class="hljs-property">@_peerBrowser</span>] <span class="hljs-keyword">or</span> util.chunkedBrowsers[util.browser]
+      <span class="hljs-keyword">if</span> needsChunking <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> chunked <span class="hljs-keyword">and</span> blob.size &gt; util.chunkedMTU
+        <span class="hljs-property">@_sendChunks</span> blob
+        <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>DataChannel currently only supports strings.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">unless</span> util.supports.sctp
+        util.blobToBinaryString blob, <span class="hljs-function"><span class="hljs-params">(str)</span> -&gt;</span>
+          self._bufferedSend str
+          <span class="hljs-keyword">return</span>
+
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">unless</span> util.supports.binaryBlob</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>We only do this if we really need to (e.g. blobs are not supported),
+because this conversion is costly.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        util.blobToArrayBuffer blob, <span class="hljs-function"><span class="hljs-params">(ab)</span> -&gt;</span>
+          self._bufferedSend ab
+          <span class="hljs-keyword">return</span>
+
+      <span class="hljs-keyword">else</span>
+        <span class="hljs-property">@_bufferedSend</span> blob
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-property">@_bufferedSend</span> data
+    <span class="hljs-keyword">return</span>
+
+  <span class="hljs-attribute">DataConnection</span>::<span class="hljs-function"><span class="hljs-title">_bufferedSend</span> = <span class="hljs-params">(msg)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@_buffering</span> <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@_trySend</span>(msg)
+      <span class="hljs-property">@_buffer</span>.push msg
+      <span class="hljs-property">@bufferSize</span> = <span class="hljs-property">@_buffer</span>.length
+    <span class="hljs-keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>Returns true if the send succeeds.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">DataConnection</span>::<span class="hljs-function"><span class="hljs-title">_trySend</span> = <span class="hljs-params">(msg)</span> -&gt;</span>
+    <span class="hljs-keyword">try</span>
+      <span class="hljs-property">@_dc</span>.send msg
+    <span class="hljs-keyword">catch</span> e
+      <span class="hljs-property">@_buffering</span> = <span class="hljs-literal">true</span>
+      self = <span class="hljs-keyword">this</span>
+      setTimeout (<span class="hljs-function">-&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>Try again.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        self._buffering = <span class="hljs-literal">false</span>
+        self._tryBuffer()
+        <span class="hljs-keyword">return</span>
+      ), <span class="hljs-number">100</span>
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
+    <span class="hljs-literal">true</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>Try to send the first message in the buffer.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">DataConnection</span>::<span class="hljs-function"><span class="hljs-title">_tryBuffer</span> = -&gt;</span>
+    <span class="hljs-keyword">return</span>  <span class="hljs-keyword">if</span> <span class="hljs-property">@_buffer</span>.length <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+    msg = <span class="hljs-property">@_buffer</span>[<span class="hljs-number">0</span>]
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@_trySend</span>(msg)
+      <span class="hljs-property">@_buffer</span>.shift()
+      <span class="hljs-property">@bufferSize</span> = <span class="hljs-property">@_buffer</span>.length
+      <span class="hljs-property">@_tryBuffer</span>()
+    <span class="hljs-keyword">return</span>
+
+  <span class="hljs-attribute">DataConnection</span>::<span class="hljs-function"><span class="hljs-title">_sendChunks</span> = <span class="hljs-params">(blob)</span> -&gt;</span>
+    blobs = util.chunk(blob)
+    i = <span class="hljs-number">0</span>
+    ii = blobs.length
+
+    <span class="hljs-keyword">while</span> i &lt; ii
+      blob = blobs[i]
+      <span class="hljs-property">@send</span> blob, <span class="hljs-literal">true</span>
+      i += <span class="hljs-number">1</span>
+    <span class="hljs-keyword">return</span>
+
+  <span class="hljs-attribute">DataConnection</span>::<span class="hljs-function"><span class="hljs-title">handleMessage</span> = <span class="hljs-params">(message)</span> -&gt;</span>
+    payload = message.payload
+    <span class="hljs-keyword">switch</span> message.type
+      <span class="hljs-keyword">when</span> <span class="hljs-string">"ANSWER"</span>
+        <span class="hljs-property">@_peerBrowser</span> = payload.browser</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Forward to negotiator</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        Negotiator.handleSDP message.type, <span class="hljs-keyword">this</span>, payload.sdp
+      <span class="hljs-keyword">when</span> <span class="hljs-string">"CANDIDATE"</span>
+        Negotiator.handleCandidate <span class="hljs-keyword">this</span>, payload.candidate
+      <span class="hljs-keyword">else</span>
+        util.warn <span class="hljs-string">"Unrecognized message type:"</span>, message.type, <span class="hljs-string">"from peer:"</span>, <span class="hljs-property">@peer</span>
+
+  <span class="hljs-keyword">return</span> DataConnection
+
+)</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
